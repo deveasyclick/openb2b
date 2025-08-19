@@ -1,0 +1,18 @@
+# Binaries
+bin/
+*.dll
+*.so
+*.dylib
+*.test
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Logs
+*.log
+
+*.env
+
+**/*.exe
+tmp/

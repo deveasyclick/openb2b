@@ -1,0 +1,11 @@
+bin/
+pkg/
+*.test
+*.exe
+tmp/
+.gitattributes
+*.md
+*.toml
+assets
+.env
+.git
