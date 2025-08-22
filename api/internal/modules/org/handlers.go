@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
-	"github.com/deveasyclick/openb2b/pkg/apperrors"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
 )

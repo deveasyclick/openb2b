@@ -16,3 +16,4 @@ go.work.sum
 
 **/*.exe
 tmp/
+main

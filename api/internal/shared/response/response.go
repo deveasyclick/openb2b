@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/deveasyclick/openb2b/pkg/apperrors"
+	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 )
 
 // WriteJSONError writes a JSON-encoded error response to the given http.ResponseWriter
