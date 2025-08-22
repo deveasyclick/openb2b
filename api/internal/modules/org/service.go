@@ -14,6 +14,12 @@ type orgService struct {
 	repo interfaces.OrgRepository
 }
 
+func NewOrgService(repo interfaces.OrgRepository) interfaces.OrgService {
+	return &orgService{
+		repo: repo,
+	}
+}
+
 func (s *orgService) Create(ctx context.Context, org *model.Org, userID uint) *apperrors.APIError {
 	if err := s.repo.Create(ctx, org); err != nil {
 		return &apperrors.APIError{
@@ -68,10 +74,4 @@ func (s *orgService) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperro
 		}
 	}
 	return org, nil
-}
-
-func NewOrgService(repo interfaces.OrgRepository) interfaces.OrgService {
-	return &orgService{
-		repo: repo,
-	}
 }

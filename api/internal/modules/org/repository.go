@@ -12,6 +12,12 @@ type orgRepository struct {
 	db *gorm.DB
 }
 
+func NewOrgRepository(db *gorm.DB) interfaces.OrgRepository {
+	return &orgRepository{
+		db: db,
+	}
+}
+
 func (r *orgRepository) Create(ctx context.Context, org *model.Org) error {
 	return r.db.WithContext(ctx).Create(org).Error
 }
@@ -52,10 +58,4 @@ func (r *orgRepository) FindOneWithFields(ctx context.Context, fields []string, 
 	}
 
 	return &result, nil
-}
-
-func NewOrgRepository(db *gorm.DB) interfaces.OrgRepository {
-	return &orgRepository{
-		db: db,
-	}
 }

@@ -19,6 +19,10 @@ type orgHandler struct {
 	createOrgUC CreateOrgUseCase
 }
 
+func NewOrgHandler(service interfaces.OrgService, createOrgUC CreateOrgUseCase) interfaces.OrgHandler {
+	return &orgHandler{service: service, createOrgUC: createOrgUC}
+}
+
 func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req CreateOrgDTO
@@ -115,8 +119,4 @@ func (h *orgHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(org); err != nil {
 		slog.Warn(apperrors.ErrEncodeResponse, "error", err)
 	}
-}
-
-func NewOrgHandler(service interfaces.OrgService, createOrgUC CreateOrgUseCase) interfaces.OrgHandler {
-	return &orgHandler{service: service, createOrgUC: createOrgUC}
 }

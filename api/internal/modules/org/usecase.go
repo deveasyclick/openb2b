@@ -19,6 +19,16 @@ type CreateOrgInput struct {
 	UserID uint
 }
 
+func NewCreateOrgUseCase(
+	os interfaces.OrgService,
+	us interfaces.UserService,
+) CreateOrgUseCase {
+	return &createOrgUseCase{
+		orgService:  os,
+		userService: us,
+	}
+}
+
 type createOrgUseCase struct {
 	orgService  interfaces.OrgService
 	userService interfaces.UserService
@@ -43,14 +53,4 @@ func (uc *createOrgUseCase) Execute(ctx context.Context, input CreateOrgInput) *
 	}
 
 	return nil
-}
-
-func NewCreateOrgUseCase(
-	os interfaces.OrgService,
-	//ds service.DistributorService,
-) CreateOrgUseCase {
-	return &createOrgUseCase{
-		orgService: os,
-		//distributorService: ds,
-	}
 }
