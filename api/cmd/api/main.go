@@ -12,13 +12,12 @@ import (
 	"github.com/deveasyclick/openb2b/internal/config"
 	"github.com/deveasyclick/openb2b/internal/db"
 	"github.com/deveasyclick/openb2b/internal/routes"
+	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/pkg/logger"
 	"github.com/go-chi/chi"
 )
 
 func main() {
-	logger.Init()
-
 	r := chi.NewRouter()
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -34,7 +33,14 @@ func main() {
 		Env:      cfg.Env,
 	})
 
-	routes.Register(r, dbConn)
+	appCtx := &deps.AppContext{
+		DB:     dbConn,
+		Config: cfg,
+		Logger: logger.New(),
+		Cache:  nil,
+	}
+
+	routes.Register(r, appCtx)
 
 	srv := http.Server{
 		Addr: ":8080",

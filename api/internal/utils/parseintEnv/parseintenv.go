@@ -1,4 +1,8 @@
-package utils
+// parseintenv parse string to integer from environment variable
+//
+// It takes a key and a default value. If the environment variable is not set, it returns the default value.
+
+package parseintenv
 
 import (
 	"log/slog"
@@ -6,6 +10,7 @@ import (
 	"strconv"
 )
 
+// ParseIntEnv parse string to integer from environment variable
 func ParseIntEnv(key string, defaultVal int) int {
 	valStr := os.Getenv(key)
 	if valStr == "" {

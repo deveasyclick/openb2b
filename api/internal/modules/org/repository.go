@@ -1,42 +1,61 @@
 package org
 
 import (
+	"context"
+
 	"github.com/deveasyclick/openb2b/internal/model"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"gorm.io/gorm"
 )
 
-type WorkspaceRepository interface {
-	Create(workspace *model.Org) error
-	Update(workspace *model.Org) error
-	Delete(ID uint) error
-	FindByID(ID uint) (*model.Org, error)
-}
-
-type workspaceRepository struct {
+type orgRepository struct {
 	db *gorm.DB
 }
 
-func (r *workspaceRepository) Create(workspace *model.Org) error {
-	return r.db.Create(workspace).Error
+func NewOrgRepository(db *gorm.DB) interfaces.OrgRepository {
+	return &orgRepository{
+		db: db,
+	}
 }
 
-func (r *workspaceRepository) Update(workspace *model.Org) error {
-	return r.db.Save(workspace).Error
+func (r *orgRepository) Create(ctx context.Context, org *model.Org) error {
+	return r.db.WithContext(ctx).Create(org).Error
 }
 
-func (r *workspaceRepository) Delete(ID uint) error {
-	return r.db.Delete(&model.Org{}, ID).Error
+func (r *orgRepository) Update(ctx context.Context, org *model.Org) error {
+	return r.db.WithContext(ctx).Save(org).Error
 }
 
-func (r *workspaceRepository) FindByID(ID uint) (*model.Org, error) {
-	var workspace model.Org
-	err := r.db.First(&workspace, ID).Error
+func (r *orgRepository) Delete(ctx context.Context, ID uint) error {
+	return r.db.WithContext(ctx).Delete(&model.Org{}, ID).Error
+}
+
+func (r *orgRepository) FindByID(ctx context.Context, ID uint) (*model.Org, error) {
+	var org model.Org
+	err := r.db.WithContext(ctx).First(&org, ID).Error
 	if err != nil {
 		return nil, err
 	}
-	return &workspace, nil
+	return &org, nil
 }
 
-func NewWorkspaceRepository(db *gorm.DB) WorkspaceRepository {
-	return &workspaceRepository{db: db}
+func (r *orgRepository) FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Org, error) {
+	var result model.Org
+
+	query := r.db.WithContext(ctx).Model(model.Org{}).Select(fields)
+
+	if where != nil {
+		query = query.Where(where)
+	}
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	err := query.First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
