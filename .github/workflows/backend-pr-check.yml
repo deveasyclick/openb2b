@@ -1,0 +1,29 @@
+name: API PR Check
+on:
+  pull_request:
+    branches: [ 'main' ]
+    paths:
+      - 'api/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run: 
+        working-directory: api
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.4'
+        cache: true
+    - name: Install dependencies
+      run: go mod download
+    - name: Tidy dependencies
+      run: go mod tidy
+    - name: Verify dependencies
+      run: go mod verify
+    - name: Build
+      run: go build -v ./cmd/api/main.go
