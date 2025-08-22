@@ -3,14 +3,14 @@ package routes
 import (
 	"time"
 
+	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"gorm.io/gorm"
 )
 
-func Register(r chi.Router, db *gorm.DB) {
+func Register(r chi.Router, appCtx *deps.AppContext) {
 	r.Use(chiMiddleware.RequestID) // Adds a unique request ID
 	r.Use(chiMiddleware.RealIP)    // Gets the real IP from X-Forwarded-For
 	r.Use(chiMiddleware.Logger)
@@ -38,7 +38,7 @@ func Register(r chi.Router, db *gorm.DB) {
 
 		// Private routes
 		r.Group(func(r chi.Router) {
-
+			registerRoutes(r, appCtx)
 		})
 
 	})
