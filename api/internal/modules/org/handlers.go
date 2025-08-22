@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/deveasyclick/openb2b/internal/shared/httphelper"
+	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
 	"github.com/deveasyclick/openb2b/pkg/apperrors"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
@@ -41,7 +41,7 @@ func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		httphelper.WriteJSONError(w, err)
+		response.WriteJSONError(w, err)
 		return
 	}
 
@@ -66,8 +66,8 @@ func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Get existing org
 	existingOrg, apiError := h.service.FindOrg(ctx, uint(id))
-	if err != nil {
-		httphelper.WriteJSONError(w, apiError)
+	if apiError != nil {
+		response.WriteJSONError(w, apiError)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	req.ApplyModel(existingOrg)
 
 	if apiError := h.service.Update(ctx, existingOrg); apiError != nil {
-		httphelper.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *orgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if apiError := h.service.Delete(ctx, uint(id)); apiError != nil {
-		httphelper.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *orgHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	org, apiError := h.service.FindOrg(ctx, uint(id))
 	if apiError != nil {
-		httphelper.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError)
 		return
 	}
 
