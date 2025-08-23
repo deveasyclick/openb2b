@@ -3,11 +3,11 @@ package org
 import (
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
@@ -17,6 +17,7 @@ import (
 type orgHandler struct {
 	service     interfaces.OrgService
 	createOrgUC CreateOrgUseCase
+	appCtx      *deps.AppContext
 }
 
 func NewOrgHandler(service interfaces.OrgService, createOrgUC CreateOrgUseCase) interfaces.OrgHandler {
@@ -27,7 +28,7 @@ func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req CreateOrgDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
-		slog.Error("invalid request body in org create", "errors", errors)
+		h.appCtx.Logger.Error("invalid request body in org create", "errors", errors)
 		validator.WriteValidationResponse(w, errors)
 		return
 	}
@@ -41,12 +42,12 @@ func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		response.WriteJSONError(w, err)
+		response.WriteJSONError(w, err, h.appCtx.Logger)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(org); err != nil {
-		slog.Warn(apperrors.ErrEncodeResponse, "error", err)
+		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
 	}
 }
 
@@ -67,7 +68,7 @@ func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// Get existing org
 	existingOrg, apiError := h.service.FindOrg(ctx, uint(id))
 	if apiError != nil {
-		response.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError, h.appCtx.Logger)
 		return
 	}
 
@@ -75,12 +76,12 @@ func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	req.ApplyModel(existingOrg)
 
 	if apiError := h.service.Update(ctx, existingOrg); apiError != nil {
-		response.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError, h.appCtx.Logger)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(existingOrg); err != nil {
-		slog.Warn(apperrors.ErrEncodeResponse, "error", err)
+		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
 	}
 }
 
@@ -93,12 +94,12 @@ func (h *orgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if apiError := h.service.Delete(ctx, uint(id)); apiError != nil {
-		response.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError, h.appCtx.Logger)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(id); err != nil {
-		slog.Warn(apperrors.ErrEncodeResponse, "error", err)
+		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
 	}
 }
 
@@ -112,11 +113,11 @@ func (h *orgHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	org, apiError := h.service.FindOrg(ctx, uint(id))
 	if apiError != nil {
-		response.WriteJSONError(w, apiError)
+		response.WriteJSONError(w, apiError, h.appCtx.Logger)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(org); err != nil {
-		slog.Warn(apperrors.ErrEncodeResponse, "error", err)
+		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
 	}
 }

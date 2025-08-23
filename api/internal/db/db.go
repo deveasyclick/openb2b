@@ -2,11 +2,11 @@ package db
 
 import (
 	"fmt"
-	"log"
-	"log/slog"
 	"time"
 
 	"github.com/deveasyclick/openb2b/internal/model"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
+	gormlogger "github.com/deveasyclick/openb2b/pkg/logger/gorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -25,7 +25,7 @@ type DBConfig struct {
 	Env      string
 }
 
-func New(c DBConfig) *gorm.DB {
+func New(c DBConfig, appLogger interfaces.Logger) *gorm.DB {
 	sslmode := "disable"
 	if c.Env == "production" {
 		sslmode = "require"
@@ -40,16 +40,18 @@ func New(c DBConfig) *gorm.DB {
 		c.Port,
 		sslmode,
 	)
+	gormLogger := gormlogger.New(appLogger, logger.Info)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger: gormLogger,
 	})
+
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		appLogger.Fatal("failed to connect to database: %v", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("failed to get sql.DB: %v", err)
+		appLogger.Fatal("failed to get sql.DB: %v", err)
 	}
 
 	sqlDB.SetMaxOpenConns(10)
@@ -68,10 +70,10 @@ func New(c DBConfig) *gorm.DB {
 	)
 
 	if err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
+		appLogger.Fatal("failed to migrate database: %v", err)
 	}
 
-	slog.Info("Connected to database")
+	appLogger.Info("Connected to database")
 
 	return db
 }
