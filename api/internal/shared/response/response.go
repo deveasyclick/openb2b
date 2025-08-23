@@ -5,10 +5,10 @@ package response
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
 
 // WriteJSONError writes a JSON-encoded error response to the given http.ResponseWriter
@@ -16,16 +16,18 @@ import (
 // and encodes the error in a standardized response format.
 //
 // If the error represents a server-side failure (5xx), the function will also
-// log the internal error details using slog. If the response cannot be encoded,
+// log the internal error details using logger. If the response cannot be encoded,
 // an additional log entry is written.
 
-func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError) {
+func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError, logger interfaces.Logger) {
 	if err.IsServerError() {
-		slog.Error(err.Message, "err", err.InternalMsg)
+		logger.Error(err.Message, "err", err.InternalMsg)
+	} else {
+		logger.Debug("client error", "msg", err.Message, "code", err.Code)
 	}
 
 	w.WriteHeader(err.Code)
 	if encodeErr := json.NewEncoder(w).Encode(err.ToResponse()); encodeErr != nil {
-		slog.Error("failed to encode API error response", "err", encodeErr)
+		logger.Error("failed to encode API error response", "err", encodeErr)
 	}
 }

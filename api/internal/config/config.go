@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 
 	parseintenv "github.com/deveasyclick/openb2b/internal/utils/parseintEnv"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/joho/godotenv"
 )
 
@@ -21,9 +21,9 @@ type Config struct {
 	AppURL     string
 }
 
-func LoadConfig() (*Config, error) {
+func LoadConfig(logger interfaces.Logger) (*Config, error) {
 	if err := godotenv.Load(); err != nil {
-		slog.Warn("No .env file found, using environment variables")
+		logger.Warn("No .env file found, using environment variables")
 	}
 
 	cfg := &Config{

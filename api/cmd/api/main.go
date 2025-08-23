@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,11 +18,12 @@ import (
 
 func main() {
 	r := chi.NewRouter()
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
+	logger := logger.New(os.Getenv("ENV"))
 
+	cfg, err := config.LoadConfig(logger)
+	if err != nil {
+		logger.Fatal("failed to load config", "err", err)
+	}
 	dbConn := db.New(db.DBConfig{
 		Host:     cfg.DBHost,
 		Port:     cfg.DBPort,
@@ -31,12 +31,12 @@ func main() {
 		Password: cfg.DBPassword,
 		Name:     cfg.DBName,
 		Env:      cfg.Env,
-	})
+	}, logger)
 
 	appCtx := &deps.AppContext{
 		DB:     dbConn,
 		Config: cfg,
-		Logger: logger.New(),
+		Logger: logger,
 		Cache:  nil,
 	}
 
@@ -47,9 +47,9 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Server running on port %d", cfg.Port)
+		logger.Info("Server running on port %d", cfg.Port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			logger.Fatal("listen", "error", err)
 		}
 	}()
 
@@ -57,13 +57,13 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
+	logger.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+		logger.Fatal("Server forced to shutdown:", "error", err)
 	}
 
-	log.Println("Server exiting")
+	logger.Info("Server exiting")
 }

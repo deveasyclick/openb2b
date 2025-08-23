@@ -5,6 +5,6 @@ import (
 	"github.com/deveasyclick/openb2b/pkg/logger/zap"
 )
 
-func New() interfaces.Logger {
-	return zap.NewZapLogger()
+func New(env string) interfaces.Logger {
+	return zap.NewZapLogger(env)
 }
