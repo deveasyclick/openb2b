@@ -6,6 +6,7 @@ import (
 
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/internal/shared/types"
 )
 
 type OrgRepository interface {
@@ -17,7 +18,7 @@ type OrgRepository interface {
 }
 
 type OrgService interface {
-	Create(ctx context.Context, org *model.Org, userID uint) *apperrors.APIError
+	Create(ctx context.Context, org *model.Org) *apperrors.APIError
 	Update(ctx context.Context, org *model.Org) *apperrors.APIError
 	Delete(ctx context.Context, ID uint) *apperrors.APIError
 	FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError)
@@ -28,4 +29,8 @@ type OrgHandler interface {
 	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request)
+}
+
+type CreateOrgUseCase interface {
+	Execute(cxt context.Context, input types.CreateOrgInput) *apperrors.APIError
 }
