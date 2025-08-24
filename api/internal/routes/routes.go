@@ -3,7 +3,9 @@ package routes
 import (
 	"time"
 
+	"github.com/deveasyclick/openb2b/internal/modules/clerk"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
+	"github.com/deveasyclick/openb2b/internal/modules/webhook"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
@@ -29,9 +31,17 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	userRepo := user.NewRepository(appCtx.DB)
-	userService := user.NewService(userRepo)
+	// User
+	userRepository := user.NewRepository(appCtx.DB)
+	userService := user.NewService(userRepository)
 	userHandler := user.NewHandler(userService, appCtx)
+
+	// Clerk
+	clerkService := clerk.NewService()
+
+	// Webhook
+	webhookService := webhook.NewService(userService, clerkService, appCtx)
+	webhookHandler := webhook.NewHandler(webhookService, appCtx)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
@@ -45,6 +55,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 		r.Group(func(r chi.Router) {
 			registerRoutes(r, appCtx)
 			registerUserRoutes(r, userHandler)
+			registerWebhookRoutes(r, webhookHandler, appCtx)
 		})
 
 	})
