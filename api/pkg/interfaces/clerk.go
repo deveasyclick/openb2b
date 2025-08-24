@@ -1,11 +1,10 @@
 package interfaces
 
 import (
-	"github.com/deveasyclick/openb2b/internal/model"
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"context"
 )
 
 type ClerkService interface {
-	SetOrg(clerkUserID string, workspaceID string) *apperrors.APIError
-	SetExternalID(user *model.User) *apperrors.APIError
+	SetOrg(ctx context.Context, clerkUserID string, workspaceID uint) error
+	SetExternalID(ctx context.Context, userClerkID string, externalID string) error
 }
