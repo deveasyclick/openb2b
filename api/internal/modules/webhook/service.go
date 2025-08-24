@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
@@ -115,15 +116,13 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 		Role:      string(model.RoleAdmin),
 	}
 
-	err := s.userService.Create(ctx, user)
-	if err != nil {
-		return &apperrors.APIError{
-			Code:    http.StatusInternalServerError,
-			Message: "error creating distributor in webhook",
-		}
+	apiError := s.userService.Create(ctx, user)
+	if apiError != nil {
+		return apiError
 	}
 
-	err = s.clerkService.SetExternalID(user)
+	userId := strconv.FormatUint(uint64(user.ID), 10)
+	err := s.clerkService.SetExternalID(ctx, user.ClerkID, userId)
 	if err != nil {
 		s.appCtx.Logger.Error("error updating clerk user", "error", err, "user", user.ID)
 	} else {
