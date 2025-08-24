@@ -8,29 +8,29 @@ import (
 	"gorm.io/gorm"
 )
 
-type orgRepository struct {
+type repository struct {
 	db *gorm.DB
 }
 
-func NewOrgRepository(db *gorm.DB) interfaces.OrgRepository {
-	return &orgRepository{
+func NewRepository(db *gorm.DB) interfaces.OrgRepository {
+	return &repository{
 		db: db,
 	}
 }
 
-func (r *orgRepository) Create(ctx context.Context, org *model.Org) error {
+func (r *repository) Create(ctx context.Context, org *model.Org) error {
 	return r.db.WithContext(ctx).Create(org).Error
 }
 
-func (r *orgRepository) Update(ctx context.Context, org *model.Org) error {
+func (r *repository) Update(ctx context.Context, org *model.Org) error {
 	return r.db.WithContext(ctx).Save(org).Error
 }
 
-func (r *orgRepository) Delete(ctx context.Context, ID uint) error {
+func (r *repository) Delete(ctx context.Context, ID uint) error {
 	return r.db.WithContext(ctx).Delete(&model.Org{}, ID).Error
 }
 
-func (r *orgRepository) FindByID(ctx context.Context, ID uint) (*model.Org, error) {
+func (r *repository) FindByID(ctx context.Context, ID uint) (*model.Org, error) {
 	var org model.Org
 	err := r.db.WithContext(ctx).First(&org, ID).Error
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *orgRepository) FindByID(ctx context.Context, ID uint) (*model.Org, erro
 	return &org, nil
 }
 
-func (r *orgRepository) FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Org, error) {
+func (r *repository) FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Org, error) {
 	var result model.Org
 
 	query := r.db.WithContext(ctx).Model(model.Org{}).Select(fields)
