@@ -14,7 +14,7 @@ import (
 	"github.com/deveasyclick/openb2b/pkg/svix"
 )
 
-// VerifyWebhook is a middleware that validates incoming webhook requests.
+// Verify is a middleware that validates incoming webhook requests.
 //
 // It performs the following steps:
 //  1. Initializes the Svix webhook verifier using the configured Clerk secret.
@@ -46,7 +46,7 @@ import (
 //
 //	Clerk → POST /webhook/clerk → VerifyWebhook middleware (validates + injects event)
 //	→ ClerkWebhookHandler (consumes types.WebhookEvent from context).
-func VerifyWebhook(appCtx *deps.AppContext) func(http.Handler) http.Handler {
+func Verify(appCtx *deps.AppContext) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Verify webhook signature
