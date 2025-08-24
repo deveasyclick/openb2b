@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/deveasyclick/openb2b/internal/modules/clerk"
+	"github.com/deveasyclick/openb2b/internal/modules/org"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
 	"github.com/deveasyclick/openb2b/internal/modules/webhook"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
@@ -43,6 +44,12 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 	webhookService := webhook.NewService(userService, clerkService, appCtx)
 	webhookHandler := webhook.NewHandler(webhookService, appCtx)
 
+	// Org
+	orgRepository := org.NewRepository(appCtx.DB)
+	orgService := org.NewService(orgRepository)
+	createOrgUseCase := org.NewCreateUseCase(orgService, userService)
+	orgHandler := org.NewHandler(orgService, createOrgUseCase, appCtx)
+
 	r.Route("/api", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
 
@@ -53,7 +60,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 
 		// Private routes
 		r.Group(func(r chi.Router) {
-			registerRoutes(r, appCtx)
+			registerOrgRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
 			registerWebhookRoutes(r, webhookHandler, appCtx)
 		})
