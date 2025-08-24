@@ -2,7 +2,7 @@ package org
 
 import "github.com/deveasyclick/openb2b/internal/model"
 
-type CreateOrgDTO struct {
+type createDTO struct {
 	Name             string `json:"name" validate:"required,min=3,max=50"`
 	Logo             string `json:"logo" validate:"omitempty,url"`
 	OrganizationName string `json:"organizationName" validate:"required,min=3,max=50"`
@@ -15,7 +15,7 @@ type CreateOrgDTO struct {
 	Country          string `json:"country" validate:"required,min=2,max=100"`
 }
 
-type UpdateOrgDTO struct {
+type updateDTO struct {
 	Name             string `json:"name" validate:"omitempty,min=3,max=50"`
 	Logo             string `json:"logo" validate:"omitempty,url"`
 	OrganizationName string `json:"organizationName" validate:"omitempty,min=3,max=50"`
@@ -27,7 +27,7 @@ type UpdateOrgDTO struct {
 	Address          string `json:"address" validate:"omitempty,min=5,max=100"`
 }
 
-func (dto *CreateOrgDTO) ToModel() *model.Org {
+func (dto *createDTO) ToModel() *model.Org {
 	return &model.Org{
 		Name:             dto.Name,
 		Logo:             dto.Logo,
@@ -42,7 +42,7 @@ func (dto *CreateOrgDTO) ToModel() *model.Org {
 	}
 }
 
-func (dto *UpdateOrgDTO) ApplyModel(org *model.Org) {
+func (dto *updateDTO) ApplyModel(org *model.Org) {
 	if dto.Name != "" {
 		org.Name = dto.Name
 	}

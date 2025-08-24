@@ -10,17 +10,17 @@ import (
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
 
-type orgService struct {
+type service struct {
 	repo interfaces.OrgRepository
 }
 
-func NewOrgService(repo interfaces.OrgRepository) interfaces.OrgService {
-	return &orgService{
+func NewService(repo interfaces.OrgRepository) interfaces.OrgService {
+	return &service{
 		repo: repo,
 	}
 }
 
-func (s *orgService) Create(ctx context.Context, org *model.Org, userID uint) *apperrors.APIError {
+func (s *service) Create(ctx context.Context, org *model.Org) *apperrors.APIError {
 	if err := s.repo.Create(ctx, org); err != nil {
 		return &apperrors.APIError{
 			Code:    http.StatusInternalServerError,
@@ -31,7 +31,7 @@ func (s *orgService) Create(ctx context.Context, org *model.Org, userID uint) *a
 	return nil
 }
 
-func (s *orgService) Update(ctx context.Context, org *model.Org) *apperrors.APIError {
+func (s *service) Update(ctx context.Context, org *model.Org) *apperrors.APIError {
 	existing, err := s.repo.FindByID(ctx, org.ID)
 	if err != nil || existing == nil {
 		return &apperrors.APIError{
@@ -52,7 +52,7 @@ func (s *orgService) Update(ctx context.Context, org *model.Org) *apperrors.APIE
 	return nil
 }
 
-func (s *orgService) Delete(ctx context.Context, ID uint) *apperrors.APIError {
+func (s *service) Delete(ctx context.Context, ID uint) *apperrors.APIError {
 	err := s.repo.Delete(ctx, ID)
 	if err != nil {
 		return &apperrors.APIError{
@@ -64,7 +64,7 @@ func (s *orgService) Delete(ctx context.Context, ID uint) *apperrors.APIError {
 	return nil
 }
 
-func (s *orgService) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError) {
+func (s *service) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError) {
 	org, err := s.repo.FindOneWithFields(ctx, []string{"id"}, map[string]any{"id": ID}, nil)
 	if err != nil {
 		return nil, &apperrors.APIError{

@@ -9,24 +9,25 @@ import (
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
+	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
 )
 
-type orgHandler struct {
+type OrgHandler struct {
 	service     interfaces.OrgService
-	createOrgUC CreateOrgUseCase
+	createOrgUC interfaces.CreateOrgUseCase
 	appCtx      *deps.AppContext
 }
 
-func NewOrgHandler(service interfaces.OrgService, createOrgUC CreateOrgUseCase) interfaces.OrgHandler {
-	return &orgHandler{service: service, createOrgUC: createOrgUC}
+func NewHandler(service interfaces.OrgService, createOrgUC interfaces.CreateOrgUseCase, appCtx *deps.AppContext) interfaces.OrgHandler {
+	return &OrgHandler{service: service, createOrgUC: createOrgUC, appCtx: appCtx}
 }
 
-func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req CreateOrgDTO
+	var req createDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		h.appCtx.Logger.Error("invalid request body in org create", "errors", errors)
 		validator.WriteValidationResponse(w, errors)
@@ -36,7 +37,7 @@ func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// Convert request to model
 	org := req.ToModel()
 
-	err := h.createOrgUC.Execute(ctx, CreateOrgInput{
+	err := h.createOrgUC.Execute(ctx, types.CreateOrgInput{
 		Org:    org,
 		UserID: 1,
 	})
@@ -51,7 +52,7 @@ func (h *orgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
@@ -59,7 +60,7 @@ func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateOrgDTO
+	var req updateDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
@@ -85,7 +86,7 @@ func (h *orgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *orgHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
@@ -103,7 +104,7 @@ func (h *orgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *orgHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *OrgHandler) Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {

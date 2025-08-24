@@ -1,17 +1,11 @@
 package routes
 
 import (
-	"github.com/deveasyclick/openb2b/internal/modules/org"
-	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
 )
 
-func registerRoutes(router chi.Router, app *deps.AppContext) {
-	orgRepository := org.NewOrgRepository(app.DB)
-	orgService := org.NewOrgService(orgRepository)
-	// TODO: Implement user service and replace nil with userService
-	createOrgUseCase := org.NewCreateOrgUseCase(orgService, nil)
-	orgHandler := org.NewOrgHandler(orgService, createOrgUseCase)
+func registerOrgRoutes(router chi.Router, orgHandler interfaces.OrgHandler) {
 
 	router.Route("/orgs", func(r chi.Router) {
 		r.Post("/", orgHandler.Create)
