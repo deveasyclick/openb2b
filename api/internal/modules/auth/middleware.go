@@ -6,16 +6,11 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	clerkHttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/deveasyclick/openb2b/internal/shared/identity"
 )
 
-type customSessionClaims struct {
-	clerk.SessionClaims
-	OrgID   string `json:"org_id,omitempty"`
-	ClerkID string `json:"clerk_id,omitempty"`
-}
-
 func customClaimsConstructor(ctx context.Context) any {
-	return customSessionClaims{}
+	return identity.CustomSessionClaims{}
 }
 
 func withCustomClaimsConstructor(params *clerkHttp.AuthorizationParams) error {
