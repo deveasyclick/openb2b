@@ -13,20 +13,20 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type webhookService struct {
+type service struct {
 	userService   interfaces.UserService
 	clerkService  interfaces.ClerkService
 	appCtx        *deps.AppContext
 	eventHandlers map[string]func(context.Context, map[string]interface{}) *apperrors.APIError
 }
 
-func NewWebhookService(service interfaces.UserService, clerkService interfaces.ClerkService, appCtx *deps.AppContext) interfaces.WebhookService {
-	s := &webhookService{userService: service, clerkService: clerkService, appCtx: appCtx}
+func NewService(us interfaces.UserService, cs interfaces.ClerkService, appCtx *deps.AppContext) interfaces.WebhookService {
+	s := &service{userService: us, clerkService: cs, appCtx: appCtx}
 
 	// eventHandlers maps webhook event types to their corresponding handler functions.
 	//
 	// Each entry in this map associates a Clerk webhook event type (e.g. "user.created")
-	// with a method on the `webhookService` that knows how to handle it. The handlers
+	// with a method on the `service` that knows how to handle it. The handlers
 	// follow a common function signature:
 	//
 	//   func(ctx context.Context, data map[string]interface{}) *apperrors.APIError
@@ -70,7 +70,7 @@ func NewWebhookService(service interfaces.UserService, clerkService interfaces.C
 //
 // Example:
 //
-//   err := webhookService.HandleEvent(ctx, event)
+//   err := service.HandleEvent(ctx, event)
 //   if err != nil {
 //       response.WriteJSONError(w, err, appCtx.Logger)
 //       return
@@ -79,7 +79,7 @@ func NewWebhookService(service interfaces.UserService, clerkService interfaces.C
 // This allows the webhook service to be easily extended by registering new
 // event handlers in the `eventHandlers` map.
 
-func (s *webhookService) HandleEvent(ctx context.Context, event *types.WebhookEvent) *apperrors.APIError {
+func (s *service) HandleEvent(ctx context.Context, event *types.WebhookEvent) *apperrors.APIError {
 	if handler, ok := s.eventHandlers[event.Type]; ok {
 		return handler(ctx, event.Data)
 	}
@@ -88,7 +88,7 @@ func (s *webhookService) HandleEvent(ctx context.Context, event *types.WebhookEv
 	return nil
 }
 
-func (s *webhookService) createUser(ctx context.Context, data map[string]interface{}) *apperrors.APIError {
+func (s *service) createUser(ctx context.Context, data map[string]interface{}) *apperrors.APIError {
 	var userData types.ClerkUser
 	if err := mapstructure.Decode(data, &userData); err != nil {
 		return &apperrors.APIError{

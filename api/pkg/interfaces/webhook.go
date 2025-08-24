@@ -13,5 +13,5 @@ type WebhookService interface {
 }
 
 type WebhookHandler interface {
-	ClerkWehbookHandler(w http.ResponseWriter, r *http.Request)
+	HandleClerkEvents(w http.ResponseWriter, r *http.Request)
 }

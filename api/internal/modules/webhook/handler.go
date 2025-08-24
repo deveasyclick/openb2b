@@ -10,19 +10,19 @@ import (
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
 
-type webhookHandler struct {
+type handler struct {
 	webhookService interfaces.WebhookService
 	appCtx         *deps.AppContext
 }
 
-func NewWebhookHandler(webhookService interfaces.WebhookService, appCtx *deps.AppContext) interfaces.WebhookHandler {
-	return &webhookHandler{
+func NewHandler(webhookService interfaces.WebhookService, appCtx *deps.AppContext) interfaces.WebhookHandler {
+	return &handler{
 		webhookService: webhookService,
 		appCtx:         appCtx,
 	}
 }
 
-func (h *webhookHandler) ClerkWehbookHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	event := ctx.Value(webhookEventKey).(*types.WebhookEvent)
 	if event == nil {
