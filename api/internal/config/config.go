@@ -10,15 +10,16 @@ import (
 )
 
 type Config struct {
-	Port       int
-	Env        string
-	DBHost     string
-	DBName     string
-	DBUser     string
-	DBPassword string
-	DBPort     int
-	RedisPort  int
-	AppURL     string
+	Port                      int
+	Env                       string
+	DBHost                    string
+	DBName                    string
+	DBUser                    string
+	DBPassword                string
+	DBPort                    int
+	RedisPort                 int
+	AppURL                    string
+	ClerkWebhookSigningSecret string
 }
 
 func LoadConfig(logger interfaces.Logger) (*Config, error) {
