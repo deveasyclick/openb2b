@@ -3,6 +3,7 @@ package routes
 import (
 	"time"
 
+	"github.com/deveasyclick/openb2b/internal/modules/user"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
@@ -28,6 +29,10 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
+	userRepo := user.NewRepository(appCtx.DB)
+	userService := user.NewService(userRepo)
+	userHandler := user.NewHandler(userService, appCtx)
+
 	r.Route("/api", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
 
@@ -39,6 +44,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 		// Private routes
 		r.Group(func(r chi.Router) {
 			registerRoutes(r, appCtx)
+			registerUserRoutes(r, userHandler)
 		})
 
 	})
