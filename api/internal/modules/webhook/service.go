@@ -113,7 +113,7 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 		FirstName: userData.FirstName,
 		LastName:  userData.LastName,
 		Email:     email,
-		Role:      string(model.RoleAdmin),
+		Role:      model.RoleAdmin,
 	}
 
 	apiError := s.userService.Create(ctx, user)
