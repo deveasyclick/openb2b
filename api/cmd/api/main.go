@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/deveasyclick/openb2b/internal/config"
 	"github.com/deveasyclick/openb2b/internal/db"
 	"github.com/deveasyclick/openb2b/internal/routes"
@@ -25,6 +26,9 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to load config", "err", err)
 	}
+
+	clerk.SetKey(cfg.ClerkSecret)
+
 	dbConn := db.New(db.DBConfig{
 		Host:     cfg.DBHost,
 		Port:     cfg.DBPort,
