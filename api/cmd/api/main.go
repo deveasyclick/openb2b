@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/deveasyclick/openb2b/internal/config"
 	"github.com/deveasyclick/openb2b/internal/db"
 	"github.com/deveasyclick/openb2b/internal/routes"
@@ -24,6 +26,9 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to load config", "err", err)
 	}
+
+	clerk.SetKey(cfg.ClerkSecret)
+
 	dbConn := db.New(db.DBConfig{
 		Host:     cfg.DBHost,
 		Port:     cfg.DBPort,
@@ -42,12 +47,18 @@ func main() {
 
 	routes.Register(r, appCtx)
 
+	port := cfg.Port
+	if port == 0 {
+		port = 8080 // default fallback
+	}
+
 	srv := http.Server{
-		Addr: ":8080",
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: r,
 	}
 
 	go func() {
-		logger.Info("Server running on port %d", cfg.Port)
+		logger.Info(fmt.Sprintf("Server running on port %d", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Fatal("listen", "error", err)
 		}

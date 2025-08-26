@@ -46,6 +46,14 @@ It’s ideal for businesses like book wholesalers, restaurant supply vendors, ev
 
 ---
 
+## Authentication
+
+OpenB2B uses [Clerk](https://clerk.com) for authentication and session management. Clerk handles **sign-up, login, OAuth, and session handling**, while the backend manages user and organization data via webhooks and custom session claims.
+
+For full setup instructions, see the [Authentication Documentation](docs/authentication.md).
+
+---
+
 ## Installation
 
 ### Clone the repository
@@ -58,10 +66,15 @@ cd openb2b
 ### Install frontend dependencies
 
 ```bash
-cd frontend && npm install
-# or
-yarn
+cd frontend && pnpm install
 ```
+
+### Install backend dependencies
+
+```bash
+cd api && pnpm install
+```
+
 
 ### Configure environment variables
 
@@ -75,9 +88,20 @@ VITE_OAUTH_CLIENT_ID=your_oauth_client_id
 Create a `.env` file in the **backend** directory:
 
 ```env
-DB_URL=postgres://user:pass@localhost:5432/openb2b?sslmode=disable
-JWT_SECRET=your_jwt_secret
-REDIS_URL=redis://localhost:6379
+PORT=
+APP_ENV=
+DB_HOST=
+DB_PORT=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+CLERK_SECRET_KEY=
+CLERK_WEBHOOK_SIGNING_SECRET=
+
+#goose
+GOOSE_DRIVER=
+GOOSE_DBSTRING=
+GOOSE_MIGRATION_DIR=
 ```
 
 ### Start development servers

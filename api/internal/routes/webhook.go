@@ -12,6 +12,6 @@ func registerWebhookRoutes(r chi.Router, webhookHandler interfaces.WebhookHandle
 	r.Route("/webhooks", func(r chi.Router) {
 
 		r.With(webhook.Verify(appCtx)).
-			Post("/createUser", webhookHandler.HandleClerkEvents)
+			Post("/handleEvents", webhookHandler.HandleClerkEvents)
 	})
 }

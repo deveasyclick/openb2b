@@ -48,7 +48,7 @@ type User struct {
 	LastName  string  `gorm:"not null;type:varchar(100);check:last_name <> ''" json:"lastName" validate:"required,max=100"`
 	Email     string  `gorm:"uniqueIndex;type:varchar(50);check:email <> ''" json:"email" validate:"required,max=50"`
 	Phone     *string `gorm:"type:varchar(50)" json:"phone" validate:"omitempty,max=50"`
-	Role      string  `gorm:"type:enum('owner','admin','sales','viewer');default:'sales'" json:"role"`
+	Role      Role    `gorm:"type:varchar(20);default:'sales';check:role IN ('distributor','admin','viewer','sales')" json:"role"`
 	OrgID     uint    `gorm:"index" json:"orgId"`
 	Org       Org     `gorm:"foreignKey:OrgID" json:"org,omitempty"`
 	Address   Address `gorm:"embedded;embeddedPrefix:address_" json:"address"`

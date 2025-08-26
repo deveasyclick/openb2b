@@ -9,6 +9,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	defaultPort      = 8080
+	defaultDBPort    = 5432
+	defaultRedisPort = 6379
+	defaultEnv       = "development"
+)
+
 type Config struct {
 	Port                      int
 	Env                       string
@@ -20,32 +27,69 @@ type Config struct {
 	RedisPort                 int
 	AppURL                    string
 	ClerkWebhookSigningSecret string
+	ClerkSecret               string
 }
 
+// LoadConfig loads environment variables from .env (if available) and system envs.
 func LoadConfig(logger interfaces.Logger) (*Config, error) {
-	if err := godotenv.Load(); err != nil {
-		logger.Warn("No .env file found, using environment variables")
+	// Try loading .env files (optional)
+	if err := godotenv.Load(".env", ".env.local"); err != nil {
+		logger.Warn("No .env file found, falling back to system environment")
 	}
 
 	cfg := &Config{
-		Env:        os.Getenv("ENV"),
-		DBHost:     os.Getenv("DB_HOST"),
-		DBName:     os.Getenv("DB_NAME"),
-		DBUser:     os.Getenv("DB_USER"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		AppURL:     os.Getenv("APP_URL"),
-		Port:                      parseintenv.ParseIntEnv("PORT", 8080, logger),
-		DBPort:                    parseintenv.ParseIntEnv("DB_PORT", 5432, logger),
-		RedisPort:                 parseintenv.ParseIntEnv("REDIS_PORT", 6379, logger),
+		Env:                       getEnv("ENV", defaultEnv),
+		DBHost:                    os.Getenv("DB_HOST"),
+		DBName:                    os.Getenv("DB_NAME"),
+		DBUser:                    os.Getenv("DB_USER"),
+		DBPassword:                os.Getenv("DB_PASSWORD"),
+		AppURL:                    os.Getenv("APP_URL"),
+		Port:                      parseintenv.ParseIntEnv("PORT", defaultPort, logger),
+		DBPort:                    parseintenv.ParseIntEnv("DB_PORT", defaultDBPort, logger),
+		RedisPort:                 parseintenv.ParseIntEnv("REDIS_PORT", defaultRedisPort, logger),
+		ClerkWebhookSigningSecret: os.Getenv("CLERK_WEBHOOK_SIGNING_SECRET"), // optional
+		ClerkSecret:               os.Getenv("CLERK_SECRET_KEY"),
 	}
 
-	if cfg.Env == "" {
-		cfg.Env = "development"
+	// Validate required config
+	if err := cfg.Validate(); err != nil {
+		return nil, err
 	}
 
-	if cfg.DBHost == "" || cfg.DBName == "" || cfg.DBUser == "" || cfg.DBPassword == "" {
-		return nil, fmt.Errorf("missing required database environment variables")
+	// Warn about optional but recommended config
+	if cfg.ClerkWebhookSigningSecret == "" {
+		logger.Warn("Missing optional env variable",
+			"key", "CLERK_WEBHOOK_SIGNING_SECRET",
+			"reason", "needed for user creation via Clerk webhooks",
+		)
 	}
 
 	return cfg, nil
+}
+
+// Validate ensures all required environment variables are present
+func (c *Config) Validate() error {
+	required := map[string]string{
+		"DB_HOST":          c.DBHost,
+		"DB_NAME":          c.DBName,
+		"DB_USER":          c.DBUser,
+		"DB_PASSWORD":      c.DBPassword,
+		"CLERK_SECRET_KEY": c.ClerkSecret,
+	}
+
+	for key, value := range required {
+		if value == "" {
+			return fmt.Errorf("missing required environment variable: %s", key)
+		}
+	}
+
+	return nil
+}
+
+// getEnv fetches an environment variable or returns a fallback
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }
