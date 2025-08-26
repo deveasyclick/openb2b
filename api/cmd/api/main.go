@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,12 +43,18 @@ func main() {
 
 	routes.Register(r, appCtx)
 
+	port := cfg.Port
+	if port == 0 {
+		port = 8080 // default fallback
+	}
+
 	srv := http.Server{
-		Addr: ":8080",
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: r,
 	}
 
 	go func() {
-		logger.Info("Server running on port %d", cfg.Port)
+		logger.Info(fmt.Sprintf("Server running on port %d", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Fatal("listen", "error", err)
 		}
