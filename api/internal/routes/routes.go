@@ -50,7 +50,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 	createOrgUseCase := org.NewCreateUseCase(orgService, userService)
 	orgHandler := org.NewHandler(orgService, createOrgUseCase, appCtx)
 
-	r.Route("/api", func(r chi.Router) {
+	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
 
 		// Public routes
