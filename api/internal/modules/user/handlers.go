@@ -20,6 +20,17 @@ func NewHandler(service interfaces.UserService, appCtx *deps.AppContext) interfa
 	return &Handler{service: service, appCtx: appCtx}
 }
 
+// Get godoc
+// @Summary Get authenticated user
+// @Description Get an authenticated user
+// @Tags users
+// @Produce json
+// @Success 200 {object} model.User
+// @Failure 404 {object} apperrors.APIErrorResponse
+// @Failure 400  {object}  apperrors.APIErrorResponse
+// @Failure 500  {object}  apperrors.APIErrorResponse
+// @Router /users/me [get]
+// @Security BearerAuth
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userFromContext, err := identity.UserFromContext(ctx)

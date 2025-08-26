@@ -277,6 +277,7 @@ definitions:
     - RoleAdmin
     - RoleViewer
   model.User:
+    description: User response model
     properties:
       address:
         $ref: '#/definitions/model.Address'
@@ -626,6 +627,33 @@ paths:
       summary: Update organization
       tags:
       - organizations
+  /users/me:
+    get:
+      description: Get an authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get authenticated user
+      tags:
+      - users
   /webhooks/handleEvents:
     post:
       consumes:

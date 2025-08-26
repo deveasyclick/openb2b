@@ -239,6 +239,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get an authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get authenticated user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/webhooks/handleEvents": {
             "post": {
                 "description": "Handles incoming webhook events from Clerk. The request body must match the WebhookEvent structure.",
@@ -691,6 +734,7 @@ const docTemplate = `{
             ]
         },
         "model.User": {
+            "description": "User response model",
             "type": "object",
             "required": [
                 "email",
