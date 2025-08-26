@@ -22,6 +22,19 @@ func NewHandler(webhookService interfaces.WebhookService, appCtx *deps.AppContex
 	}
 }
 
+// HandleClerkEvents godoc
+// @Summary      Receive Clerk webhook events
+// @Description  Handles incoming webhook events from Clerk. The request body must match the WebhookEvent structure.
+// @Tags         webhooks
+// @Accept       json
+// @Produce      json
+// @Param        event  body      types.WebhookEvent  true  "Webhook Event Payload"
+// @Success      200    {string}  string               "OK"
+// @Failure      400    {object}  apperrors.APIErrorResponse
+// @Failure      401    {object}  apperrors.APIErrorResponse
+// @Failure      500    {object}  apperrors.APIErrorResponse
+// @Router       /webhooks/handleEvents [post]
+// @BasePath /
 func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	event := ctx.Value(webhookEventKey).(*types.WebhookEvent)
