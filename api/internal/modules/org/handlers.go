@@ -25,6 +25,18 @@ func NewHandler(service interfaces.OrgService, createOrgUC interfaces.CreateOrgU
 	return &OrgHandler{service: service, createOrgUC: createOrgUC, appCtx: appCtx}
 }
 
+// Create godoc
+// @Summary Create organization
+// @Description Create a new organization
+// @Tags organizations
+// @Accept json
+// @Produce json
+// @Param request body createDTO true "Organization payload"
+// @Success 200 {object} model.Org
+// @Failure      400  {object}  apperrors.APIErrorResponse
+// @Failure      500  {object}  apperrors.APIErrorResponse
+// @Router /orgs [post]
+// @Security BearerAuth
 func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req createDTO
@@ -52,6 +64,20 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Update godoc
+// @Summary Update organization
+// @Description Update an existing organization by ID
+// @Tags organizations
+// @Accept json
+// @Produce json
+// @Param id path int true "Organization ID"
+// @Param request body updateDTO true "Update organization payload"
+// @Success 200 {object} model.Org
+// @Failure 404 {object} apperrors.APIErrorResponse
+// @Failure 400  {object}  apperrors.APIErrorResponse
+// @Failure 500  {object}  apperrors.APIErrorResponse
+// @Router /orgs/{id} [put]
+// @Security BearerAuth
 func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
@@ -86,6 +112,18 @@ func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Delete godoc
+// @Summary Delete organization
+// @Description Delete an organization by ID
+// @Tags organizations
+// @Produce json
+// @Param id path int true "Organization ID"
+// @Success 200 {integer} int "Deleted organization ID"
+// @Failure 404 {object} apperrors.APIErrorResponse
+// @Failure 400  {object}  apperrors.APIErrorResponse
+// @Failure 500  {object}  apperrors.APIErrorResponse
+// @Router /orgs/{id} [delete]
+// @Security BearerAuth
 func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
@@ -104,6 +142,18 @@ func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get godoc
+// @Summary Get organization
+// @Description Get an organization by ID
+// @Tags organizations
+// @Produce json
+// @Param id path int true "Organization ID"
+// @Success 200 {object} model.Org
+// @Failure 404 {object} apperrors.APIErrorResponse
+// @Failure 400  {object}  apperrors.APIErrorResponse
+// @Failure 500  {object}  apperrors.APIErrorResponse
+// @Router /orgs/{id} [get]
+// @Security BearerAuth
 func (h *OrgHandler) Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
