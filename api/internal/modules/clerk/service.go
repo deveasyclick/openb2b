@@ -16,9 +16,9 @@ func NewService() interfaces.ClerkService {
 	return &service{}
 }
 
-func (s *service) SetOrg(ctx context.Context, clerkID string, workspaceID uint) error {
+func (s *service) SetOrg(ctx context.Context, clerkID string, orgID uint) error {
 	dataBytes, _ := json.Marshal(map[string]string{
-		"workspace_id": strconv.FormatUint(uint64(workspaceID), 10),
+		"org_id": strconv.FormatUint(uint64(orgID), 10),
 	})
 	raw := json.RawMessage(dataBytes)
 	_, err := user.Update(ctx, clerkID, &user.UpdateParams{PublicMetadata: &raw})

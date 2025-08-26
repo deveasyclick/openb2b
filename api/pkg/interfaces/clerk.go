@@ -5,6 +5,6 @@ import (
 )
 
 type ClerkService interface {
-	SetOrg(ctx context.Context, clerkUserID string, workspaceID uint) error
+	SetOrg(ctx context.Context, clerkUserID string, orgID uint) error
 	SetExternalID(ctx context.Context, userClerkID string, externalID string) error
 }
