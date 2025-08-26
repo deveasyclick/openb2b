@@ -41,6 +41,8 @@ func (r Role) Value() (driver.Value, error) {
 	}
 }
 
+// User represents a user entity
+// @Description User response model
 type User struct {
 	BaseModel
 	ClerkID   string  `gorm:"uniqueIndex;type:varchar(50)" json:"clerkId"`

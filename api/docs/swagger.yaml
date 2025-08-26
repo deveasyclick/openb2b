@@ -1,0 +1,697 @@
+basePath: /api/v1
+definitions:
+  apperrors.APIErrorResponse:
+    description: Error response object
+    properties:
+      code:
+        description: Application-specific error code
+        example: 400
+        type: integer
+      message:
+        description: Human-readable message for clients
+        example: invalid request body
+        type: string
+    type: object
+  model.Address:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+    type: object
+  model.Customer:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      company:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      firstName:
+        maxLength: 100
+        type: string
+      id:
+        type: integer
+      lastName:
+        maxLength: 100
+        type: string
+      orders:
+        items:
+          $ref: '#/definitions/model.Order'
+        type: array
+      org:
+        $ref: '#/definitions/model.Org'
+      orgId:
+        type: integer
+      phoneNumber:
+        type: string
+      state:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - firstName
+    - lastName
+    type: object
+  model.DeliveryInfo:
+    properties:
+      address:
+        type: string
+      at:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      date:
+        type: string
+      state:
+        type: string
+      status:
+        $ref: '#/definitions/model.DeliveryStatus'
+      transportFare:
+        type: number
+    type: object
+  model.DeliveryStatus:
+    enum:
+    - pending
+    - shipped
+    - delivered
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - DeliveryPending
+    - DeliveryShipped
+    - DeliveryDelivered
+    - DeliveryCancelled
+  model.DiscountInfo:
+    properties:
+      amount:
+        type: number
+      type:
+        $ref: '#/definitions/model.DiscountType'
+    type: object
+  model.DiscountType:
+    enum:
+    - percentage
+    - fixed
+    type: string
+    x-enum-varnames:
+    - DiscountPercentage
+    - DiscountFixed
+  model.Order:
+    properties:
+      created_at:
+        type: string
+      createdBy:
+        $ref: '#/definitions/model.User'
+      customerId:
+        type: integer
+      delivery:
+        $ref: '#/definitions/model.DeliveryInfo'
+      discount:
+        $ref: '#/definitions/model.DiscountInfo'
+      distributorId:
+        type: integer
+      id:
+        type: integer
+      notes:
+        type: string
+      orderItems:
+        items:
+          $ref: '#/definitions/model.OrderItem'
+        type: array
+      org:
+        $ref: '#/definitions/model.Org'
+      orgId:
+        type: integer
+      requestedFor:
+        $ref: '#/definitions/model.Customer'
+      status:
+        $ref: '#/definitions/model.OrderStatus'
+      updated_at:
+        type: string
+    type: object
+  model.OrderItem:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      order:
+        $ref: '#/definitions/model.Order'
+      orderId:
+        type: integer
+      price:
+        type: number
+      product:
+        $ref: '#/definitions/model.Product'
+      productId:
+        type: integer
+      quantity:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.OrderStatus:
+    enum:
+    - pending
+    - approved
+    - delivered
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - OrderStatusPending
+    - OrderStatusApproved
+    - OrderStatusDelivered
+    - OrderStatusCancelled
+  model.Org:
+    description: Organization response model
+    properties:
+      address:
+        maxLength: 100
+        type: string
+      city:
+        maxLength: 30
+        type: string
+      country:
+        maxLength: 30
+        type: string
+      created_at:
+        type: string
+      customers:
+        items:
+          $ref: '#/definitions/model.Customer'
+        type: array
+      email:
+        maxLength: 50
+        type: string
+      id:
+        type: integer
+      logo:
+        type: string
+      name:
+        maxLength: 50
+        type: string
+      onboardedAt:
+        type: boolean
+      orders:
+        items:
+          $ref: '#/definitions/model.Order'
+        type: array
+      organizationName:
+        maxLength: 50
+        type: string
+      organizationUrl:
+        maxLength: 100
+        type: string
+      phone:
+        maxLength: 50
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/model.Product'
+        type: array
+      state:
+        maxLength: 30
+        type: string
+      updated_at:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/model.Customer'
+        type: array
+    required:
+    - address
+    - city
+    - country
+    - email
+    - name
+    - organizationName
+    - phone
+    - state
+    type: object
+  model.Product:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      org:
+        $ref: '#/definitions/model.Org'
+      orgId:
+        type: integer
+      price:
+        type: number
+      quantity:
+        type: integer
+      sku:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.Role:
+    enum:
+    - distributor
+    - admin
+    - viewer
+    type: string
+    x-enum-varnames:
+    - RoleOwner
+    - RoleAdmin
+    - RoleViewer
+  model.User:
+    description: User response model
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      clerkId:
+        type: string
+      created_at:
+        type: string
+      email:
+        maxLength: 50
+        type: string
+      firstName:
+        maxLength: 100
+        type: string
+      id:
+        type: integer
+      lastName:
+        maxLength: 100
+        type: string
+      org:
+        $ref: '#/definitions/model.Org'
+      orgId:
+        type: integer
+      phone:
+        maxLength: 50
+        type: string
+      role:
+        $ref: '#/definitions/model.Role'
+      updated_at:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    type: object
+  org.createDTO:
+    description: Organization creation request
+    properties:
+      address:
+        description: |-
+          Address of the organization
+          Required: true
+        example: 123 Market Street
+        maxLength: 100
+        minLength: 5
+        type: string
+      city:
+        description: |-
+          City where the organization is located
+          Required: true
+        example: San Francisco
+        maxLength: 30
+        minLength: 2
+        type: string
+      country:
+        description: |-
+          Country where the organization is registered
+          Required: true
+        example: USA
+        maxLength: 100
+        minLength: 2
+        type: string
+      email:
+        description: |-
+          Contact email
+          Required: true
+        example: contact@openb2b.io
+        type: string
+      logo:
+        description: |-
+          Logo URL of the organization
+          Required: false
+        example: https://example.com/logo.png
+        type: string
+      name:
+        description: |-
+          Name of the organization (short name / brand)
+          Required: true
+          Min length: 3
+          Max length: 50
+        example: OpenB2B
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationName:
+        description: |-
+          Full legal organization name
+          Required: true
+        example: OpenB2B Technologies Inc.
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationUrl:
+        description: |-
+          Official website URL
+          Required: false
+        example: https://openb2b.io
+        type: string
+      phone:
+        description: |-
+          Contact phone
+          Required: true
+        example: +1-202-555-0199
+        maxLength: 50
+        minLength: 10
+        type: string
+      state:
+        description: |-
+          State where the organization is located
+          Required: true
+        example: California
+        maxLength: 30
+        minLength: 2
+        type: string
+    required:
+    - address
+    - city
+    - country
+    - email
+    - name
+    - organizationName
+    - phone
+    - state
+    type: object
+  org.updateDTO:
+    description: Organization update request
+    properties:
+      address:
+        description: Address of the organization
+        example: 123 Market Street
+        maxLength: 100
+        minLength: 5
+        type: string
+      city:
+        description: City where the organization is located
+        example: San Francisco
+        maxLength: 30
+        minLength: 2
+        type: string
+      email:
+        description: Contact email
+        example: contact@openb2b.io
+        type: string
+      logo:
+        description: Logo URL of the organization
+        example: https://example.com/logo.png
+        type: string
+      name:
+        description: Name of the organization
+        example: OpenB2B
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationName:
+        description: Full legal organization name
+        example: OpenB2B Technologies Inc.
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationUrl:
+        description: Official website URL
+        example: https://openb2b.io
+        type: string
+      phone:
+        description: Contact phone
+        example: +1-202-555-0199
+        maxLength: 50
+        minLength: 10
+        type: string
+      state:
+        description: State where the organization is located
+        example: California
+        maxLength: 30
+        minLength: 2
+        type: string
+    type: object
+  types.WebhookEvent:
+    properties:
+      created_at:
+        description: Event creation timestamp
+        example: "2025-08-26T18:00:00Z"
+        type: string
+      data:
+        additionalProperties: true
+        description: Data payload of the webhook
+        type: object
+      id:
+        description: ID of the webhook event
+        example: evt_123456
+        type: string
+      type:
+        description: Type of the webhook event (e.g., "user.created")
+        example: user.created
+        type: string
+      webhook_id:
+        description: ID of the webhook that triggered this event
+        example: wh_987654
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@openb2b.com
+    name: API Support
+    url: http://openb2b.com/support
+  description: Open-source multi-tenant ordering & invoicing platform API.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://openb2b.com/terms/
+  title: OpenB2B API
+  version: "1.0"
+paths:
+  /orgs:
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization
+      parameters:
+      - description: Organization payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/org.createDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Org'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create organization
+      tags:
+      - organizations
+  /orgs/{id}:
+    delete:
+      description: Delete an organization by ID
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deleted organization ID
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete organization
+      tags:
+      - organizations
+    get:
+      description: Get an organization by ID
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Org'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get organization
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Update an existing organization by ID
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update organization payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/org.updateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Org'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update organization
+      tags:
+      - organizations
+  /users/me:
+    get:
+      description: Get an authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get authenticated user
+      tags:
+      - users
+  /webhooks/handleEvents:
+    post:
+      consumes:
+      - application/json
+      description: Handles incoming webhook events from Clerk. The request body must
+        match the WebhookEvent structure.
+      parameters:
+      - description: Webhook Event Payload
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/types.WebhookEvent'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      summary: Receive Clerk webhook events
+      tags:
+      - webhooks
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

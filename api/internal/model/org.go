@@ -1,5 +1,7 @@
 package model
 
+// Org represents an organization entity
+// @Description Organization response model
 type Org struct {
 	BaseModel
 	Name             string     `gorm:"not null;unique;index;type:varchar(50);check:name <> ''" json:"name" validate:"required,max=50"`

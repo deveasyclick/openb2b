@@ -17,6 +17,12 @@ It’s ideal for businesses like book wholesalers, restaurant supply vendors, ev
 
 ---
 
+## API Documentation
+
+Detailed API reference and interactive Swagger UI can be found in [api.md](./docs/api.md).
+
+--
+
 ## Technology Stack
 
 - **Frontend:** React + TypeScript  

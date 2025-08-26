@@ -1,3 +1,22 @@
+// @title OpenB2B API
+// @version 1.0
+// @description Open-source multi-tenant ordering & invoicing platform API.
+// @termsOfService http://openb2b.com/terms/
+
+// @contact.name API Support
+// @contact.url http://openb2b.com/support
+// @contact.email support@openb2b.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:3000
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 package main
 
 import (

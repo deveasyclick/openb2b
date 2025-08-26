@@ -1,8 +1,12 @@
 package routes
 
 import (
+	"fmt"
+	"net/url"
 	"time"
 
+	"github.com/deveasyclick/openb2b/docs"
+	"github.com/deveasyclick/openb2b/internal/modules/auth"
 	"github.com/deveasyclick/openb2b/internal/modules/clerk"
 	"github.com/deveasyclick/openb2b/internal/modules/org"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
@@ -12,6 +16,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	swagger "github.com/swaggo/http-swagger"
 )
 
 func Register(r chi.Router, appCtx *deps.AppContext) {
@@ -55,15 +60,24 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 
 		// Public routes
 		r.Group(func(r chi.Router) {
-
+			registerWebhookRoutes(r, webhookHandler, appCtx)
 		})
 
 		// Private routes
 		r.Group(func(r chi.Router) {
+			r.Use(auth.AuthRequiredMiddleware())
 			registerOrgRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
-			registerWebhookRoutes(r, webhookHandler, appCtx)
 		})
-
 	})
+
+	parsedURL, err := url.Parse(appCtx.Config.AppURL)
+	if err != nil {
+		appCtx.Logger.Warn("failed to parse app url", "err", err)
+	}
+
+	docs.SwaggerInfo.Host = parsedURL.Host
+	r.Get("/swagger/*", swagger.Handler(
+		swagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", parsedURL.Host)),
+	))
 }

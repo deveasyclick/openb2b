@@ -5,10 +5,17 @@ type ValidationError struct {
 	Tag   string `json:"tag"`
 	Value string `json:"value"`
 }
+
+// APIErrorResponse represents the JSON error returned by the API
+// @Description Error response object
 type APIErrorResponse struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	// Application-specific error code
+	Code int `json:"code" example:"400"`
+
+	// Human-readable message for clients
+	Message string `json:"message" example:"invalid request body"`
 }
+
 type APIError struct {
 	Code        int
 	Message     string

@@ -67,3 +67,7 @@ migrate-status:
 
 migrate-new:
 	goose -dir $(MIGRATIONS_DIR) create $(name) sql
+
+.PHONY: swagger
+swagger:
+	cd api && swag init --output docs --generalInfo cmd/api/main.go
