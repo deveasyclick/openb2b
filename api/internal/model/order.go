@@ -56,7 +56,7 @@ type Order struct {
 	CreatedBy     *User        `gorm:"foreignKey:DistributorID" json:"createdBy"`
 	CustomerID    uint         `gorm:"index" json:"customerId"`
 	Customer      *Customer    `gorm:"foreignKey:CustomerID" json:"requestedFor"`
-	Status        OrderStatus  `gorm:"type:enum('pending','processing','shipped','completed');default:'pending'" json:"status"`
+	Status        OrderStatus  `gorm:"type:varchar(20);default:'pending';check:status IN ('pending','processing','shipped','completed')" json:"status"`
 	OrgID         uint         `gorm:"index" json:"orgId"`
 	Org           *Org         `gorm:"foreignKey:OrgID" json:"org"`
 	OrderItems    []OrderItem  `gorm:"foreignKey:OrderID" json:"orderItems"`
