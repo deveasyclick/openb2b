@@ -27,6 +27,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 	// Enable rate limiter of 100 requests per minute per IP
 	r.Use(httprate.LimitByIP(100, 1*time.Minute))
 	r.Use(chiMiddleware.Heartbeat("/ping"))
+	r.Use(middleware.Recover(appCtx.Logger))
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		AllowedOrigins:   []string{"http://localhost:3000"},
