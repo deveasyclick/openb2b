@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/deveasyclick/openb2b/docs"
-	"github.com/deveasyclick/openb2b/internal/modules/auth"
+	"github.com/deveasyclick/openb2b/internal/middleware"
 	"github.com/deveasyclick/openb2b/internal/modules/clerk"
 	"github.com/deveasyclick/openb2b/internal/modules/org"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
@@ -65,7 +65,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 
 		// Private routes
 		r.Group(func(r chi.Router) {
-			r.Use(auth.AuthRequiredMiddleware())
+			r.Use(middleware.AuthRequiredMiddleware())
 			registerOrgRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
 		})

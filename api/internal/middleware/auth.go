@@ -1,4 +1,4 @@
-package auth
+package middleware
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 func customClaimsConstructor(ctx context.Context) any {
-	return identity.CustomSessionClaims{}
+	return &identity.CustomSessionClaims{}
 }
 
 func withCustomClaimsConstructor(params *clerkHttp.AuthorizationParams) error {
