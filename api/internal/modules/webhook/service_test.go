@@ -46,6 +46,10 @@ func (m *mockClerkService) SetExternalID(ctx context.Context, clerkID string, ex
 	return m.setExternalIDFn(ctx, clerkID, externalID)
 }
 
+func (m *mockClerkService) DeleteUser(ctx context.Context, clerkID string) error {
+	return nil
+}
+
 type mockLogger struct {
 	warnCalled bool
 	lastMsg    string
