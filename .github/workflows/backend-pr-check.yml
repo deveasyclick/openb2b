@@ -25,5 +25,10 @@ jobs:
       run: go mod tidy
     - name: Verify dependencies
       run: go mod verify
+    - name: Test
+      run: |
+          set -o pipefail
+          go test -v -failfast ./... | grep -v 'no test files'
+          go tool cover -func=coverage.out
     - name: Build
       run: go build -v ./cmd/api/main.go
