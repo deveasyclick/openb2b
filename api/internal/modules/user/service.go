@@ -23,8 +23,9 @@ func NewService(repo interfaces.UserRepository) interfaces.UserService {
 func (s *service) Create(ctx context.Context, user *model.User) *apperrors.APIError {
 	if err := s.repo.Create(ctx, user); err != nil {
 		return &apperrors.APIError{
-			Code:    http.StatusInternalServerError,
-			Message: fmt.Sprintf("%s: id %d", apperrors.ErrCreateUser, user.ID),
+			Code:        http.StatusInternalServerError,
+			Message:     fmt.Sprintf("%s: id %d", apperrors.ErrCreateUser, user.ID),
+			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateUser, err.Error()),
 		}
 	}
 
@@ -45,7 +46,7 @@ func (s *service) Update(ctx context.Context, user *model.User) *apperrors.APIEr
 		return &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
 			Message:     apperrors.ErrUpdateUser,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateUser, err),
+			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateUser, err.Error()),
 		}
 	}
 

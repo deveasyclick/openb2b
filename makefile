@@ -71,3 +71,8 @@ migrate-new:
 .PHONY: swagger
 swagger:
 	cd api && swag init --output docs --generalInfo cmd/api/main.go
+
+
+.PHONY: test
+test:
+	cd api && go test ./... | grep -v 'no test files'
