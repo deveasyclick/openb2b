@@ -45,13 +45,13 @@ func (r Role) Value() (driver.Value, error) {
 // @Description User response model
 type User struct {
 	BaseModel
-	ClerkID   string  `gorm:"uniqueIndex;type:varchar(50)" json:"clerkId"`
-	FirstName string  `gorm:"not null;type:varchar(100);check:first_name <> ''" json:"firstName" validate:"required,max=100"`
-	LastName  string  `gorm:"not null;type:varchar(100);check:last_name <> ''" json:"lastName" validate:"required,max=100"`
-	Email     string  `gorm:"uniqueIndex;type:varchar(50);check:email <> ''" json:"email" validate:"required,max=50"`
-	Phone     *string `gorm:"type:varchar(50)" json:"phone" validate:"omitempty,max=50"`
-	Role      Role    `gorm:"type:varchar(20);default:'sales';check:role IN ('distributor','admin','viewer','sales')" json:"role"`
-	OrgID     uint    `gorm:"index" json:"orgId"`
-	Org       Org     `gorm:"foreignKey:OrgID" json:"org,omitempty"`
-	Address   Address `gorm:"embedded;embeddedPrefix:address_" json:"address"`
+	ClerkID   string   `gorm:"uniqueIndex;type:varchar(50)" json:"clerkId"`
+	FirstName string   `gorm:"not null;type:varchar(100);check:first_name <> ''" json:"firstName" validate:"required,max=100"`
+	LastName  string   `gorm:"not null;type:varchar(100);check:last_name <> ''" json:"lastName" validate:"required,max=100"`
+	Email     string   `gorm:"uniqueIndex;type:varchar(50);check:email <> ''" json:"email" validate:"required,max=50"`
+	Phone     *string  `gorm:"type:varchar(50)" json:"phone" validate:"omitempty,max=50"`
+	Role      Role     `gorm:"type:varchar(20);default:'sales';check:role IN ('distributor','admin','viewer','sales')" json:"role"`
+	OrgID     *uint    `gorm:"index;default:null" json:"orgId,omitempty"` // nullable foreign key
+	Org       *Org     `gorm:"foreignKey:OrgID" json:"org,omitempty"`     // optional relation
+	Address   *Address `gorm:"embedded;embeddedPrefix:address_" json:"address"`
 }
