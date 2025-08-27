@@ -37,8 +37,8 @@ func NewHandler(webhookService interfaces.WebhookService, appCtx *deps.AppContex
 // @BasePath /
 func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	event := ctx.Value(webhookEventKey).(*types.WebhookEvent)
-	if event == nil {
+	event, ok := ctx.Value(webhookEventKey).(types.WebhookEvent)
+	if !ok {
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:    http.StatusBadRequest,
 			Message: "No webhook event in context",
@@ -46,9 +46,9 @@ func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.appCtx.Logger.Info("Handling webhook event", "event", event.Data)
+	h.appCtx.Logger.Info("Handling webhook event", "event", event)
 
-	err := h.webhookService.HandleEvent(ctx, event)
+	err := h.webhookService.HandleEvent(ctx, &event)
 
 	if err != nil {
 		response.WriteJSONError(w, err, h.appCtx.Logger)

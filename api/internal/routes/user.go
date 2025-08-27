@@ -8,6 +8,6 @@ import (
 func registerUserRoutes(router chi.Router, handler interfaces.UserHandler) {
 
 	router.Route("/users", func(r chi.Router) {
-		r.Post("/me", handler.GetMe)
+		r.Get("/me", handler.GetMe)
 	})
 }

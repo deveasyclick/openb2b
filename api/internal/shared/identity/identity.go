@@ -24,7 +24,6 @@ func GetCustomClaims(ctx context.Context) (*CustomSessionClaims, error) {
 		return nil, fmt.Errorf("no session claims found in context")
 	}
 	customClaims, ok := claims.Custom.(*CustomSessionClaims)
-
 	if !ok {
 		return nil, fmt.Errorf("invalid or missing custom claims")
 	}
@@ -54,13 +53,18 @@ func UserFromContext(ctx context.Context) (*ContextUser, error) {
 		return nil, err
 	}
 
-	orgID, err := parseuint.ParseUint(claims.OrgID, "org ID")
-	if err != nil {
-		return nil, err
+	user := &ContextUser{
+		ID: userID,
 	}
 
-	return &ContextUser{
-		ID:  userID,
-		Org: orgID,
-	}, nil
+	if claims.OrgID != "" {
+		orgID, err := parseuint.ParseUint(claims.OrgID, "org ID")
+		if err != nil {
+			return nil, err
+		}
+
+		user.Org = orgID
+	}
+
+	return user, nil
 }

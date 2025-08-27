@@ -24,6 +24,7 @@ func NewZapLogger(env string) interfaces.Logger {
 		cfg := zap.NewDevelopmentConfig()
 		cfg.EncoderConfig.TimeKey = "time"
 		cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+		cfg.DisableStacktrace = true // only Fatal/Panic get stacktraces
 		base, err = cfg.Build()
 	}
 

@@ -118,6 +118,16 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 
 	apiError := s.userService.Create(ctx, user)
 	if apiError != nil {
+
+		// TODO: Move this later to a background worker
+		// Delete user from Clerk if creation fails
+		go func(ctx context.Context, clerkId string) {
+			cleanupError := s.clerkService.DeleteUser(ctx, user.ClerkID)
+			if cleanupError != nil {
+				s.appCtx.Logger.Error("error deleting user from clerk", "error", cleanupError, "user", user.ID)
+			}
+		}(ctx, user.ClerkID)
+
 		return apiError
 	}
 

@@ -31,3 +31,8 @@ func (s *service) SetExternalID(ctx context.Context, userClerkID string, externa
 
 	return err
 }
+
+func (s *service) DeleteUser(ctx context.Context, userClerkID string) error {
+	_, err := user.Delete(ctx, userClerkID)
+	return err
+}
