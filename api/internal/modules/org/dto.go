@@ -2,6 +2,30 @@ package org
 
 import "github.com/deveasyclick/openb2b/internal/model"
 
+// Address represents the address of the organization
+// @Description Address
+type Address struct {
+	// State where the organization is located
+	// Required: true
+	State string `json:"state" validate:"required,min=2,max=30" example:"California"`
+
+	// City where the organization is located
+	// Required: true
+	City string `json:"city" validate:"required,min=2,max=30" example:"San Francisco"`
+
+	// Address of the organization
+	// Required: true
+	Address string `json:"address" validate:"required,min=5,max=100" example:"123 Market Street"`
+
+	// Country where the organization is registered
+	// Required: true
+	Country string `json:"country" validate:"required,min=2,max=100" example:"USA"`
+
+	// Zip where the organization is located
+	// Required: true
+	Zip string `json:"zip" validate:"required,min=2,max=30" example:"02912"`
+}
+
 // createDTO represents the payload for creating a new organization
 // @Description Organization creation request
 type createDTO struct {
@@ -31,21 +55,7 @@ type createDTO struct {
 	// Required: true
 	Phone string `json:"phone" validate:"required,min=10,max=50" example:"+1-202-555-0199"`
 
-	// State where the organization is located
-	// Required: true
-	State string `json:"state" validate:"required,min=2,max=30" example:"California"`
-
-	// City where the organization is located
-	// Required: true
-	City string `json:"city" validate:"required,min=2,max=30" example:"San Francisco"`
-
-	// Address of the organization
-	// Required: true
-	Address string `json:"address" validate:"required,min=5,max=100" example:"123 Market Street"`
-
-	// Country where the organization is registered
-	// Required: true
-	Country string `json:"country" validate:"required,min=2,max=100" example:"USA"`
+	Address Address `json:"address"`
 }
 
 // updateDTO represents the payload for updating an organization
@@ -69,14 +79,8 @@ type updateDTO struct {
 	// Contact phone
 	Phone string `json:"phone" validate:"omitempty,min=10,max=50" example:"+1-202-555-0199"`
 
-	// State where the organization is located
-	State string `json:"state" validate:"omitempty,min=2,max=30" example:"California"`
-
-	// City where the organization is located
-	City string `json:"city" validate:"omitempty,min=2,max=30" example:"San Francisco"`
-
 	// Address of the organization
-	Address string `json:"address" validate:"omitempty,min=5,max=100" example:"123 Market Street"`
+	Address Address `json:"address" validate:"optional"`
 }
 
 func (dto *createDTO) ToModel() *model.Org {
@@ -87,10 +91,13 @@ func (dto *createDTO) ToModel() *model.Org {
 		OrganizationUrl:  dto.OrganizationUrl,
 		Email:            dto.Email,
 		Phone:            dto.Phone,
-		State:            dto.State,
-		City:             dto.City,
-		Address:          dto.Address,
-		Country:          dto.Country,
+		Address: &model.Address{
+			City:    dto.Address.City,
+			State:   dto.Address.State,
+			Zip:     dto.Address.Zip,
+			Country: dto.Address.Country,
+			Address: dto.Address.Address,
+		},
 	}
 }
 
@@ -113,13 +120,19 @@ func (dto *updateDTO) ApplyModel(org *model.Org) {
 	if dto.Phone != "" {
 		org.Phone = dto.Phone
 	}
-	if dto.State != "" {
-		org.State = dto.State
+	if dto.Address.State != "" {
+		org.Address.State = dto.Address.State
 	}
-	if dto.City != "" {
-		org.City = dto.City
+	if dto.Address.Address != "" {
+		org.Address.Address = dto.Address.Address
 	}
-	if dto.Address != "" {
-		org.Address = dto.Address
+	if dto.Address.City != "" {
+		org.Address.City = dto.Address.City
+	}
+	if dto.Address.Country != "" {
+		org.Address.Country = dto.Address.Country
+	}
+	if dto.Address.Zip != "" {
+		org.Address.Country = dto.Address.Zip
 	}
 }

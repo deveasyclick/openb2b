@@ -598,27 +598,14 @@ const docTemplate = `{
             "description": "Organization response model",
             "type": "object",
             "required": [
-                "address",
-                "city",
-                "country",
                 "email",
                 "name",
                 "organizationName",
-                "phone",
-                "state"
+                "phone"
             ],
             "properties": {
                 "address": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "city": {
-                    "type": "string",
-                    "maxLength": 30
-                },
-                "country": {
-                    "type": "string",
-                    "maxLength": 30
+                    "$ref": "#/definitions/model.Address"
                 },
                 "created_at": {
                     "type": "string"
@@ -669,10 +656,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.Product"
                     }
-                },
-                "state": {
-                    "type": "string",
-                    "maxLength": 30
                 },
                 "updated_at": {
                     "type": "string"
@@ -767,9 +750,15 @@ const docTemplate = `{
                     "maxLength": 100
                 },
                 "org": {
-                    "$ref": "#/definitions/model.Org"
+                    "description": "optional relation",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Org"
+                        }
+                    ]
                 },
                 "orgId": {
+                    "description": "nullable foreign key",
                     "type": "integer"
                 },
                 "phone": {
@@ -784,18 +773,15 @@ const docTemplate = `{
                 }
             }
         },
-        "org.createDTO": {
-            "description": "Organization creation request",
+        "org.Address": {
+            "description": "Address",
             "type": "object",
             "required": [
                 "address",
                 "city",
                 "country",
-                "email",
-                "name",
-                "organizationName",
-                "phone",
-                "state"
+                "state",
+                "zip"
             ],
             "properties": {
                 "address": {
@@ -818,6 +804,35 @@ const docTemplate = `{
                     "maxLength": 100,
                     "minLength": 2,
                     "example": "USA"
+                },
+                "state": {
+                    "description": "State where the organization is located\nRequired: true",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "California"
+                },
+                "zip": {
+                    "description": "Zip where the organization is located\nRequired: true",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "02912"
+                }
+            }
+        },
+        "org.createDTO": {
+            "description": "Organization creation request",
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "organizationName",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/org.Address"
                 },
                 "email": {
                     "description": "Contact email\nRequired: true",
@@ -854,13 +869,6 @@ const docTemplate = `{
                     "maxLength": 50,
                     "minLength": 10,
                     "example": "+1-202-555-0199"
-                },
-                "state": {
-                    "description": "State where the organization is located\nRequired: true",
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "California"
                 }
             }
         },
@@ -870,17 +878,11 @@ const docTemplate = `{
             "properties": {
                 "address": {
                     "description": "Address of the organization",
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 5,
-                    "example": "123 Market Street"
-                },
-                "city": {
-                    "description": "City where the organization is located",
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "San Francisco"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/org.Address"
+                        }
+                    ]
                 },
                 "email": {
                     "description": "Contact email",
@@ -917,13 +919,6 @@ const docTemplate = `{
                     "maxLength": 50,
                     "minLength": 10,
                     "example": "+1-202-555-0199"
-                },
-                "state": {
-                    "description": "State where the organization is located",
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "California"
                 }
             }
         },

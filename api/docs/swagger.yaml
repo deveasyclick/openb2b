@@ -181,14 +181,7 @@ definitions:
     description: Organization response model
     properties:
       address:
-        maxLength: 100
-        type: string
-      city:
-        maxLength: 30
-        type: string
-      country:
-        maxLength: 30
-        type: string
+        $ref: '#/definitions/model.Address'
       created_at:
         type: string
       customers:
@@ -224,9 +217,6 @@ definitions:
         items:
           $ref: '#/definitions/model.Product'
         type: array
-      state:
-        maxLength: 30
-        type: string
       updated_at:
         type: string
       users:
@@ -234,14 +224,10 @@ definitions:
           $ref: '#/definitions/model.Customer'
         type: array
     required:
-    - address
-    - city
-    - country
     - email
     - name
     - organizationName
     - phone
-    - state
     type: object
   model.Product:
     properties:
@@ -297,8 +283,11 @@ definitions:
         maxLength: 100
         type: string
       org:
-        $ref: '#/definitions/model.Org'
+        allOf:
+        - $ref: '#/definitions/model.Org'
+        description: optional relation
       orgId:
+        description: nullable foreign key
         type: integer
       phone:
         maxLength: 50
@@ -312,8 +301,8 @@ definitions:
     - firstName
     - lastName
     type: object
-  org.createDTO:
-    description: Organization creation request
+  org.Address:
+    description: Address
     properties:
       address:
         description: |-
@@ -339,6 +328,34 @@ definitions:
         maxLength: 100
         minLength: 2
         type: string
+      state:
+        description: |-
+          State where the organization is located
+          Required: true
+        example: California
+        maxLength: 30
+        minLength: 2
+        type: string
+      zip:
+        description: |-
+          Zip where the organization is located
+          Required: true
+        example: "02912"
+        maxLength: 30
+        minLength: 2
+        type: string
+    required:
+    - address
+    - city
+    - country
+    - state
+    - zip
+    type: object
+  org.createDTO:
+    description: Organization creation request
+    properties:
+      address:
+        $ref: '#/definitions/org.Address'
       email:
         description: |-
           Contact email
@@ -383,39 +400,19 @@ definitions:
         maxLength: 50
         minLength: 10
         type: string
-      state:
-        description: |-
-          State where the organization is located
-          Required: true
-        example: California
-        maxLength: 30
-        minLength: 2
-        type: string
     required:
-    - address
-    - city
-    - country
     - email
     - name
     - organizationName
     - phone
-    - state
     type: object
   org.updateDTO:
     description: Organization update request
     properties:
       address:
+        allOf:
+        - $ref: '#/definitions/org.Address'
         description: Address of the organization
-        example: 123 Market Street
-        maxLength: 100
-        minLength: 5
-        type: string
-      city:
-        description: City where the organization is located
-        example: San Francisco
-        maxLength: 30
-        minLength: 2
-        type: string
       email:
         description: Contact email
         example: contact@openb2b.io
@@ -445,12 +442,6 @@ definitions:
         example: +1-202-555-0199
         maxLength: 50
         minLength: 10
-        type: string
-      state:
-        description: State where the organization is located
-        example: California
-        maxLength: 30
-        minLength: 2
         type: string
     type: object
   types.WebhookEvent:
