@@ -87,7 +87,7 @@ func (s *service) FindByID(ctx context.Context, ID uint, preloads []string) (*mo
 
 func (s *service) AssignOrg(ctx context.Context, userID uint, orgID uint) *apperrors.APIError {
 	// Associate the workspace with the distributor
-	user := &model.User{OrgID: orgID}
+	user := &model.User{OrgID: &orgID}
 	user.ID = userID
 	err := s.repo.Update(ctx, user)
 	if err != nil {
