@@ -8,6 +8,7 @@ import (
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
@@ -46,12 +47,20 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userFromContext, err := identity.UserFromContext(ctx)
+	if err != nil {
+		h.appCtx.Logger.Error(apperrors.ErrUserFromContext, "err", err)
+		response.WriteJSONError(w, &apperrors.APIError{
+			Code:        http.StatusInternalServerError,
+			Message:     apperrors.ErrCreateOrg,
+			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrUserFromContext, err),
+		}, h.appCtx.Logger)
+		return
+	}
+
 	// Convert request to model
 	org := req.ToModel()
 
-	err := h.createOrgUC.Execute(ctx, types.CreateOrgInput{
-		Org:    org,
-		UserID: 1,
 	// Check if org already exists
 	exists, apiError := h.service.Exists(ctx, map[string]any{"name": org.Name})
 	if apiError != nil {
@@ -68,10 +77,13 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	apiError = h.createOrgUC.Execute(ctx, types.CreateOrgInput{
+		Org:  org,
+		User: userFromContext,
 	})
 
-	if err != nil {
-		response.WriteJSONError(w, err, h.appCtx.Logger)
+	if apiError != nil {
+		response.WriteJSONError(w, apiError, h.appCtx.Logger)
 		return
 	}
 
