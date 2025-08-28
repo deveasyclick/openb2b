@@ -56,9 +56,18 @@ func UserFromContext(ctx context.Context) (*ContextUser, error) {
 		return nil, err
 	}
 
+	var orgId uint
+	if claims.OrgID != "" {
+		orgId, err = parseuint.ParseUint(claims.OrgID, "org ID")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	user := &ContextUser{
 		ID:      userID,
 		ClerkID: claims.ClerkId,
+		Org:     orgId,
 	}
 
 	return user, nil
