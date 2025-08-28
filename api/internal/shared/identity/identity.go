@@ -9,13 +9,15 @@ import (
 )
 
 type CustomSessionClaims struct {
-	OrgID  string `json:"org_id,omitempty"`
-	UserID string `json:"user_id,omitempty"`
+	OrgID   string `json:"org_id,omitempty"`
+	UserID  string `json:"user_id,omitempty"`
+	ClerkId string
 }
 
 type ContextUser struct {
-	ID  uint
-	Org uint
+	ID      uint
+	Org     uint
+	ClerkID string
 }
 
 func GetCustomClaims(ctx context.Context) (*CustomSessionClaims, error) {
@@ -29,8 +31,9 @@ func GetCustomClaims(ctx context.Context) (*CustomSessionClaims, error) {
 	}
 
 	return &CustomSessionClaims{
-		UserID: customClaims.UserID,
-		OrgID:  customClaims.OrgID,
+		UserID:  customClaims.UserID,
+		OrgID:   customClaims.OrgID,
+		ClerkId: claims.Subject,
 	}, nil
 }
 
@@ -54,16 +57,8 @@ func UserFromContext(ctx context.Context) (*ContextUser, error) {
 	}
 
 	user := &ContextUser{
-		ID: userID,
-	}
-
-	if claims.OrgID != "" {
-		orgID, err := parseuint.ParseUint(claims.OrgID, "org ID")
-		if err != nil {
-			return nil, err
-		}
-
-		user.Org = orgID
+		ID:      userID,
+		ClerkID: claims.ClerkId,
 	}
 
 	return user, nil
