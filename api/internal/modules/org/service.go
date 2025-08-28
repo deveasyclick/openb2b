@@ -75,3 +75,20 @@ func (s *service) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.
 	}
 	return org, nil
 }
+
+func (s *service) Exists(ctx context.Context, where map[string]any) (bool, *apperrors.APIError) {
+	org, err := s.repo.FindOneWithFields(ctx, []string{"id"}, where, nil)
+	if err != nil {
+		return false, &apperrors.APIError{
+			Code:        http.StatusInternalServerError,
+			Message:     apperrors.ErrFindOrg,
+			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrFindOrg, err),
+		}
+	}
+
+	if org != nil {
+		return true, nil
+	}
+
+	return false, nil
+}

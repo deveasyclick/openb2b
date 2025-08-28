@@ -52,6 +52,22 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err := h.createOrgUC.Execute(ctx, types.CreateOrgInput{
 		Org:    org,
 		UserID: 1,
+	// Check if org already exists
+	exists, apiError := h.service.Exists(ctx, map[string]any{"name": org.Name})
+	if apiError != nil {
+		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+		return
+	}
+
+	// Return already exists error if org already exists
+	if exists {
+		response.WriteJSONError(w, &apperrors.APIError{
+			Code:    http.StatusConflict,
+			Message: fmt.Sprintf("%s: name %s", apperrors.ErrOrgAlreadyExists, org.Name),
+		}, h.appCtx.Logger)
+		return
+	}
+
 	})
 
 	if err != nil {
