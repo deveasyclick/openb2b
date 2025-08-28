@@ -50,7 +50,15 @@ func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 
 	err := h.webhookService.HandleEvent(ctx, &event)
 
+	if err != nil && err.Code != http.StatusConflict {
+		h.appCtx.Logger.Warn("Error handling webhook event", "event", event.Type, "error", err.Message)
+
+		// Return status Ok if auser already exists so the webhook will not keep retrying
+		w.WriteHeader(http.StatusOK)
+	}
+
 	if err != nil {
+		//TODO: Send slerk alert
 		response.WriteJSONError(w, err, h.appCtx.Logger)
 		return
 	}

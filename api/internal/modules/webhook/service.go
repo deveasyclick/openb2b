@@ -107,8 +107,19 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 			Message: "no email address found in ClerkUser",
 		}
 	}
+	user, apiError := s.userService.FindByEmail(ctx, email)
+	if apiError != nil {
+		return apiError
+	}
 
-	user := &model.User{
+	if user != nil {
+		return &apperrors.APIError{
+			Code:    http.StatusConflict,
+			Message: apperrors.ErrUserAlreadyExists,
+		}
+	}
+
+	user = &model.User{
 		ClerkID:   userData.ID,
 		FirstName: userData.FirstName,
 		LastName:  userData.LastName,
@@ -116,7 +127,7 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 		Role:      model.RoleAdmin,
 	}
 
-	apiError := s.userService.Create(ctx, user)
+	apiError = s.userService.Create(ctx, user)
 	if apiError != nil {
 
 		// TODO: Move this later to a background worker
@@ -134,10 +145,13 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 	userId := strconv.FormatUint(uint64(user.ID), 10)
 	err := s.clerkService.SetExternalID(ctx, user.ClerkID, userId)
 	if err != nil {
-		s.appCtx.Logger.Error("error updating clerk user", "error", err, "user", user.ID)
-	} else {
-		s.appCtx.Logger.Info("Updated clerk user externalId", "externalId", user.ID)
+		return &apperrors.APIError{
+			Code:        http.StatusInternalServerError,
+			Message:     `Error updating clerk user`,
+			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateUser, err),
+		}
 	}
+	s.appCtx.Logger.Info("Updated clerk user externalId", "externalId", user.ID)
 
 	return nil
 }
