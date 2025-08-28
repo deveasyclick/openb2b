@@ -67,7 +67,7 @@ func (s *service) Delete(ctx context.Context, ID uint) *apperrors.APIError {
 }
 
 func (s *service) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError) {
-	org, err := s.repo.FindOneWithFields(ctx, []string{"id"}, map[string]any{"id": ID}, nil)
+	org, err := s.repo.FindOneWithFields(ctx, nil, map[string]any{"id": ID}, nil)
 	if err != nil {
 		return nil, &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
