@@ -1,6 +1,8 @@
 package org
 
-import "github.com/deveasyclick/openb2b/internal/model"
+import (
+	"github.com/deveasyclick/openb2b/internal/model"
+)
 
 // Address represents the address of the organization
 // @Description Address
@@ -58,6 +60,14 @@ type createDTO struct {
 	Address Address `json:"address"`
 }
 
+type UpdateAddressDTO struct {
+	State   string `json:"state" validate:"omitempty,min=2,max=30" example:"California"`
+	City    string `json:"city" validate:"omitempty,min=2,max=30" example:"San Francisco"`
+	Address string `json:"address" validate:"omitempty,min=5,max=100" example:"123 Market Street"`
+	Country string `json:"country" validate:"omitempty,min=2,max=100" example:"USA"`
+	Zip     string `json:"zip" validate:"omitempty,min=2,max=30" example:"02912"`
+}
+
 // updateDTO represents the payload for updating an organization
 // @Description Organization update request
 type updateDTO struct {
@@ -80,7 +90,7 @@ type updateDTO struct {
 	Phone string `json:"phone" validate:"omitempty,min=10,max=50" example:"+1-202-555-0199"`
 
 	// Address of the organization
-	Address Address `json:"address" validate:"optional"`
+	Address UpdateAddressDTO `json:"address"`
 }
 
 func (dto *createDTO) ToModel() *model.Org {
@@ -108,9 +118,7 @@ func (dto *updateDTO) ApplyModel(org *model.Org) {
 	if dto.Logo != "" {
 		org.Logo = dto.Logo
 	}
-	if dto.OrganizationName != "" {
-		org.OrganizationName = dto.OrganizationName
-	}
+
 	if dto.OrganizationUrl != "" {
 		org.OrganizationUrl = dto.OrganizationUrl
 	}
