@@ -107,8 +107,19 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 			Message: "no email address found in ClerkUser",
 		}
 	}
+	user, apiError := s.userService.FindByEmail(ctx, email)
+	if apiError != nil {
+		return apiError
+	}
 
-	user := &model.User{
+	if user != nil {
+		return &apperrors.APIError{
+			Code:    http.StatusConflict,
+			Message: apperrors.ErrUserAlreadyExists,
+		}
+	}
+
+	user = &model.User{
 		ClerkID:   userData.ID,
 		FirstName: userData.FirstName,
 		LastName:  userData.LastName,
@@ -116,7 +127,7 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 		Role:      model.RoleAdmin,
 	}
 
-	apiError := s.userService.Create(ctx, user)
+	apiError = s.userService.Create(ctx, user)
 	if apiError != nil {
 
 		// TODO: Move this later to a background worker
