@@ -3,7 +3,6 @@ package clerk
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 
 	"github.com/clerk/clerk-sdk-go/v2/user"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
@@ -16,9 +15,9 @@ func NewService() interfaces.ClerkService {
 	return &service{}
 }
 
-func (s *service) SetOrg(ctx context.Context, clerkID string, orgID uint) error {
+func (s *service) SetOrg(ctx context.Context, clerkID string, orgID string) error {
 	dataBytes, _ := json.Marshal(map[string]string{
-		"org_id": strconv.FormatUint(uint64(orgID), 10),
+		"org_id": orgID,
 	})
 	raw := json.RawMessage(dataBytes)
 	_, err := user.Update(ctx, clerkID, &user.UpdateParams{PublicMetadata: &raw})
