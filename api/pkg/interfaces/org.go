@@ -7,6 +7,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
+	"gorm.io/gorm"
 )
 
 type OrgRepository interface {
@@ -15,6 +16,7 @@ type OrgRepository interface {
 	Delete(ctx context.Context, ID uint) error
 	FindByID(ctx context.Context, ID uint) (*model.Org, error)
 	FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Org, error)
+	WithTx(tx *gorm.DB) OrgRepository
 }
 
 type OrgService interface {
@@ -22,6 +24,8 @@ type OrgService interface {
 	Update(ctx context.Context, org *model.Org) *apperrors.APIError
 	Delete(ctx context.Context, ID uint) *apperrors.APIError
 	FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError)
+	WithTx(tx *gorm.DB) OrgService
+	Exists(ctx context.Context, where map[string]any) (bool, *apperrors.APIError)
 }
 
 type OrgHandler interface {

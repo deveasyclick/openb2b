@@ -12,17 +12,20 @@ const (
 	ErrFindCustomer     = "error finding customer"
 
 	// Org
-	ErrOrgNotFound = "org not found"
-	ErrUpdateOrg   = "error updating org"
-	ErrDeleteOrg   = "error deleting org"
-	ErrFindOrg     = "error finding org"
-	ErrCreateOrg   = "error creating org"
+	ErrOrgNotFound      = "org not found"
+	ErrUpdateOrg        = "error updating org"
+	ErrDeleteOrg        = "error deleting org"
+	ErrFindOrg          = "error finding org"
+	ErrCreateOrg        = "error creating org"
+	ErrOrgAlreadyExists = "org already exists"
 
 	// User
-	ErrUserNotFound = "user not found"
-	ErrUpdateUser   = "error updating user"
-	ErrDeleteUser   = "error deleting user"
-	ErrFindUser     = "error finding user"
-	ErrCreateUser   = "error creating user"
-	ErrAssignUser   = "error assigning user to org"
+	ErrUserNotFound      = "user not found"
+	ErrUpdateUser        = "error updating user"
+	ErrDeleteUser        = "error deleting user"
+	ErrFindUser          = "error finding user"
+	ErrCreateUser        = "error creating user"
+	ErrAssignUser        = "error assigning user to org"
+	ErrUserAlreadyExists = "user already exists"
+	ErrUserFromContext   = "error getting user from context"
 )

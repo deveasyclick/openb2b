@@ -53,7 +53,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 	// Org
 	orgRepository := org.NewRepository(appCtx.DB)
 	orgService := org.NewService(orgRepository)
-	createOrgUseCase := org.NewCreateUseCase(orgService, userService)
+	createOrgUseCase := org.NewCreateUseCase(orgService, userService, clerkService, appCtx)
 	orgHandler := org.NewHandler(orgService, createOrgUseCase, appCtx)
 
 	r.Route("/api/v1", func(r chi.Router) {

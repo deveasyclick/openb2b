@@ -8,7 +8,9 @@ import (
 
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 type mockUserRepo struct {
@@ -33,6 +35,10 @@ func (m *mockUserRepo) Delete(ctx context.Context, id uint) error {
 }
 func (m *mockUserRepo) FindOneWithFields(ctx context.Context, fields []string, cond map[string]any, preload []string) (*model.User, error) {
 	return m.findOneWithFieldsFn(ctx, fields, cond, preload)
+}
+
+func (m *mockUserRepo) WithTx(tx *gorm.DB) interfaces.UserRepository {
+	return m
 }
 
 func TestService_Create(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
+	"gorm.io/gorm"
 )
 
 type service struct {
@@ -23,8 +24,9 @@ func NewService(repo interfaces.OrgRepository) interfaces.OrgService {
 func (s *service) Create(ctx context.Context, org *model.Org) *apperrors.APIError {
 	if err := s.repo.Create(ctx, org); err != nil {
 		return &apperrors.APIError{
-			Code:    http.StatusInternalServerError,
-			Message: fmt.Sprintf("%s: id %d", apperrors.ErrCreateOrg, org.ID),
+			Code:        http.StatusInternalServerError,
+			Message:     fmt.Sprintf("%s: id %d", apperrors.ErrCreateOrg, org.ID),
+			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateOrg, err),
 		}
 	}
 
@@ -74,4 +76,25 @@ func (s *service) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.
 		}
 	}
 	return org, nil
+}
+
+func (s *service) Exists(ctx context.Context, where map[string]any) (bool, *apperrors.APIError) {
+	org, err := s.repo.FindOneWithFields(ctx, []string{"id"}, where, nil)
+	if err != nil {
+		return false, &apperrors.APIError{
+			Code:        http.StatusInternalServerError,
+			Message:     apperrors.ErrFindOrg,
+			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrFindOrg, err),
+		}
+	}
+
+	if org != nil {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (s *service) WithTx(tx *gorm.DB) interfaces.OrgService {
+	return &service{repo: s.repo.WithTx(tx)}
 }

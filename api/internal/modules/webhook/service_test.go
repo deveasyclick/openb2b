@@ -12,6 +12,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 // --- Mock dependencies ---
@@ -35,11 +36,15 @@ func (m *mockUserService) FindByEmail(ctx context.Context, email string) (*model
 	return nil, nil
 }
 
+func (m *mockUserService) WithTx(tx *gorm.DB) interfaces.UserService {
+	return m
+}
+
 type mockClerkService struct {
 	setExternalIDFn func(ctx context.Context, clerkID string, externalID string) error
 }
 
-func (m *mockClerkService) SetOrg(ctx context.Context, clerkID string, orgID uint) error {
+func (m *mockClerkService) SetOrg(ctx context.Context, clerkID string, orgID string) error {
 	return nil
 }
 func (m *mockClerkService) SetExternalID(ctx context.Context, clerkID string, externalID string) error {

@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/deveasyclick/openb2b/internal/model"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 type mockRepo struct {
@@ -32,6 +34,10 @@ func (m *mockRepo) Delete(ctx context.Context, id uint) error {
 }
 func (m *mockRepo) FindOneWithFields(ctx context.Context, fields []string, cond map[string]any, preload []string) (*model.Org, error) {
 	return m.findOneWithFieldsFn(ctx, fields, cond, preload)
+}
+
+func (m *mockRepo) WithTx(tx *gorm.DB) interfaces.OrgRepository {
+	return m
 }
 
 func TestService_Create(t *testing.T) {

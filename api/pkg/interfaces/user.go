@@ -6,6 +6,7 @@ import (
 
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -14,6 +15,7 @@ type UserRepository interface {
 	Delete(ctx context.Context, ID uint) error
 	FindByID(ctx context.Context, ID uint) (*model.User, error)
 	FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.User, error)
+	WithTx(tx *gorm.DB) UserRepository
 }
 
 type UserService interface {
@@ -23,6 +25,7 @@ type UserService interface {
 	FindByEmail(ctx context.Context, email string) (*model.User, *apperrors.APIError)
 	FindByID(ctx context.Context, ID uint, preloads []string) (*model.User, *apperrors.APIError)
 	AssignOrg(ctx context.Context, userID uint, orgID uint) *apperrors.APIError
+	WithTx(tx *gorm.DB) UserService
 }
 
 type UserHandler interface {
