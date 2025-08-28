@@ -23,7 +23,7 @@ func (r *repository) Create(ctx context.Context, user *model.User) error {
 }
 
 func (r *repository) Update(ctx context.Context, user *model.User) error {
-	return r.db.WithContext(ctx).Where("id = ?", user.ID).Updates(user).Error
+	return r.db.WithContext(ctx).Updates(user).Error
 }
 
 func (r *repository) Delete(ctx context.Context, ID uint) error {
