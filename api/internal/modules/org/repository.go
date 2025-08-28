@@ -59,3 +59,8 @@ func (r *repository) FindOneWithFields(ctx context.Context, fields []string, whe
 
 	return &result, nil
 }
+
+// WithTx returns a new repository with the given transaction
+func (r *repository) WithTx(tx *gorm.DB) interfaces.OrgRepository {
+	return &repository{db: tx}
+}

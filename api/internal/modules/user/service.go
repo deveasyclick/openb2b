@@ -8,6 +8,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
+	"gorm.io/gorm"
 )
 
 type service struct {
@@ -112,4 +113,8 @@ func (s *service) FindByEmail(ctx context.Context, email string) (*model.User, *
 	}
 
 	return distributor, nil
+}
+
+func (s *service) WithTx(tx *gorm.DB) interfaces.UserService {
+	return &service{repo: s.repo.WithTx(tx)}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
+	"gorm.io/gorm"
 )
 
 type service struct {
@@ -91,4 +92,8 @@ func (s *service) Exists(ctx context.Context, where map[string]any) (bool, *appe
 	}
 
 	return false, nil
+}
+
+func (s *service) WithTx(tx *gorm.DB) interfaces.OrgService {
+	return &service{repo: s.repo.WithTx(tx)}
 }
