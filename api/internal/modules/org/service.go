@@ -24,8 +24,9 @@ func NewService(repo interfaces.OrgRepository) interfaces.OrgService {
 func (s *service) Create(ctx context.Context, org *model.Org) *apperrors.APIError {
 	if err := s.repo.Create(ctx, org); err != nil {
 		return &apperrors.APIError{
-			Code:    http.StatusInternalServerError,
-			Message: fmt.Sprintf("%s: id %d", apperrors.ErrCreateOrg, org.ID),
+			Code:        http.StatusInternalServerError,
+			Message:     fmt.Sprintf("%s: id %d", apperrors.ErrCreateOrg, org.ID),
+			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateOrg, err),
 		}
 	}
 
