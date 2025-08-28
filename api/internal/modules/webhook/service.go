@@ -145,10 +145,13 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 	userId := strconv.FormatUint(uint64(user.ID), 10)
 	err := s.clerkService.SetExternalID(ctx, user.ClerkID, userId)
 	if err != nil {
-		s.appCtx.Logger.Error("error updating clerk user", "error", err, "user", user.ID)
-	} else {
-		s.appCtx.Logger.Info("Updated clerk user externalId", "externalId", user.ID)
+		return &apperrors.APIError{
+			Code:        http.StatusInternalServerError,
+			Message:     `Error updating clerk user`,
+			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateUser, err),
+		}
 	}
+	s.appCtx.Logger.Info("Updated clerk user externalId", "externalId", user.ID)
 
 	return nil
 }
