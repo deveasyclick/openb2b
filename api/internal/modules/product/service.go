@@ -68,6 +68,10 @@ func (s *service) UpdateVariant(ctx context.Context, variant *model.Variant) err
 	return s.repo.UpdateVariant(ctx, variant)
 }
 
+func (s *service) CheckVariantExists(ctx context.Context, sku string) (bool, error) {
+	return s.repo.CheckVariantExistsBySKU(ctx, sku)
+}
+
 func (s *service) WithTx(tx *gorm.DB) interfaces.ProductService {
 	return &service{repo: s.repo.WithTx(tx)}
 }

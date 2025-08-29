@@ -22,6 +22,7 @@ type ProductService interface {
 	UpdateVariant(ctx context.Context, variant *model.Variant) error
 	DeleteVariant(ctx context.Context, productID uint, variantID uint) error
 	FindVariantByID(ctx context.Context, productID uint, variantID uint) (*model.Variant, error)
+	CheckVariantExists(ctx context.Context, sku string) (bool, error)
 }
 
 type ProductRepository interface {
@@ -38,6 +39,7 @@ type ProductRepository interface {
 	UpdateVariant(ctx context.Context, variant *model.Variant) error
 	DeleteVariant(ctx context.Context, variantID uint, productID uint) error
 	FindVariantByID(ctx context.Context, variantID uint, productID uint) (*model.Variant, error)
+	CheckVariantExistsBySKU(ctx context.Context, sku string) (bool, error)
 }
 
 type ProductHandler interface {

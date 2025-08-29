@@ -2,6 +2,7 @@ package product
 
 import (
 	"context"
+	"errors"
 
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
@@ -113,6 +114,18 @@ func (r *repository) FindVariantByID(ctx context.Context, variantID uint, produc
 		return nil, err
 	}
 	return &variant, nil
+}
+
+func (r *repository) CheckVariantExistsBySKU(ctx context.Context, sku string) (bool, error) {
+	var variant model.Variant
+	err := r.db.WithContext(ctx).
+		Where("sku = ?", sku).
+		First(&variant).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 // WithTx returns a new repository with the given transaction
