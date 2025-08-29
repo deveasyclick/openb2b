@@ -16,16 +16,15 @@ type createProductDTO struct {
 	ImageURL    string                    `json:"imageUrl" validate:"omitempty,url"`
 	Description string                    `json:"description" validate:"omitempty,min=2,max=1000"`
 	Variants    []createProductVariantDTO `json:"variants" validate:"required,dive"`
-	OrgID       uint                      `json:"orgId" validate:"required"`
 }
 
-func (p *createProductDTO) ToModel() model.Product {
+func (p *createProductDTO) ToModel(orgID uint) model.Product {
 	product := model.Product{
 		Name:        p.Name,
 		Category:    p.Category,
 		ImageURL:    p.ImageURL,
 		Description: p.Description,
-		OrgID:       p.OrgID,
+		OrgID:       orgID,
 	}
 
 	// map variants
@@ -36,7 +35,7 @@ func (p *createProductDTO) ToModel() model.Product {
 			Size:  v.Size,
 			Price: v.Price,
 			Stock: v.Stock,
-			OrgID: p.OrgID, // enforce same org
+			OrgID: orgID, // enforce same org
 		})
 	}
 

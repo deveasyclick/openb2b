@@ -59,8 +59,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert request to model
-	product := req.ToModel()
-	product.OrgID = userFromContext.Org
+	product := req.ToModel(userFromContext.Org)
 
 	// Check if product already exists
 	exists, err := h.service.Exists(ctx, map[string]any{"name": product.Name})
