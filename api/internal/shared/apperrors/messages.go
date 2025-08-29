@@ -2,8 +2,9 @@ package apperrors
 
 const (
 	// Generic
-	ErrEncodeResponse = "failed to encode response"
-	ErrInvalidId      = "invalid id"
+	ErrEncodeResponse     = "failed to encode response"
+	ErrInvalidId          = "invalid id"
+	ErrInvalidRequestBody = "invalid request body"
 
 	// Customer
 	ErrCustomerNotFound = "customer not found"
@@ -28,4 +29,18 @@ const (
 	ErrAssignUser        = "error assigning user to org"
 	ErrUserAlreadyExists = "user already exists"
 	ErrUserFromContext   = "error getting user from context"
+
+	// Product
+	ErrProductAlreadyExists = "product already exists"
+	ErrCreateProduct        = "error creating product"
+	ErrUpdateProduct        = "error updating product"
+	ErrDeleteProduct        = "error deleting product"
+	ErrFindProduct          = "error finding product"
+
+	// Variant
+	ErrVariantAlreadyExists = "variant already exists"
+	ErrCreateVariant        = "error creating variant"
+	ErrUpdateVariant        = "error updating variant"
+	ErrDeleteVariant        = "error deleting variant"
+	ErrFindVariant          = "error finding variant"
 )
