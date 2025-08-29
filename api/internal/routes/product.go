@@ -16,7 +16,7 @@ func registerProductRoutes(router chi.Router, productHandler interfaces.ProductH
 
 		r.Delete("/{id}", productHandler.Delete)
 
-		r.Route("/variants", func(r chi.Router) {
+		r.Route("/{productId}/variants", func(r chi.Router) {
 			r.Post("/", productHandler.CreateVariant)
 			r.Put("/{id}", productHandler.UpdateVariant)
 			r.Delete("/{id}", productHandler.DeleteVariant)
