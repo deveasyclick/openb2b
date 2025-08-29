@@ -31,3 +31,24 @@ func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError, logger inter
 		logger.Error("failed to encode API error response", "err", encodeErr)
 	}
 }
+
+// APIResponse is a standard success response wrapper
+type APIResponse struct {
+	Code    int         `json:"code" example:"200"`
+	Message string      `json:"message" example:"success"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+// WriteJSONSuccess writes a structured success response
+func WriteJSONSuccess(w http.ResponseWriter, statusCode int, data any, logger interfaces.Logger) {
+	resp := APIResponse{
+		Code:    statusCode,
+		Message: http.StatusText(statusCode), // "OK", "Created", etc.
+		Data:    data,
+	}
+
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		logger.Error(apperrors.ErrEncodeResponse, "error", err)
+	}
+}
