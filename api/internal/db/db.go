@@ -61,6 +61,7 @@ func New(c DBConfig, appLogger interfaces.Logger) *gorm.DB {
 	// Migrate the schema
 	err = db.AutoMigrate(
 		&model.Customer{},
+		&model.Variant{},
 		&model.Product{},
 		&model.Order{},
 		&model.OrderItem{},

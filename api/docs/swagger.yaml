@@ -230,27 +230,30 @@ definitions:
     - phone
     type: object
   model.Product:
+    description: Product response model
     properties:
       category:
         type: string
       created_at:
         type: string
+      description:
+        type: string
       id:
         type: integer
+      imageUrl:
+        type: string
       name:
         type: string
       org:
         $ref: '#/definitions/model.Org'
       orgId:
         type: integer
-      price:
-        type: number
-      quantity:
-        type: integer
-      sku:
-        type: string
       updated_at:
         type: string
+      variants:
+        items:
+          $ref: '#/definitions/model.Variant'
+        type: array
     type: object
   model.Role:
     enum:
@@ -300,6 +303,27 @@ definitions:
     - email
     - firstName
     - lastName
+    type: object
+  model.Variant:
+    description: Variant response model
+    properties:
+      color:
+        type: string
+      id:
+        type: integer
+      orgID:
+        description: needed for sku uniqueness per org
+        type: integer
+      price:
+        type: number
+      productID:
+        type: integer
+      size:
+        type: string
+      sku:
+        type: string
+      stock:
+        type: integer
     type: object
   org.Address:
     description: Address
@@ -442,6 +466,121 @@ definitions:
         example: +1-202-555-0199
         maxLength: 50
         minLength: 10
+        type: string
+    type: object
+  product.createProductDTO:
+    properties:
+      category:
+        maxLength: 50
+        minLength: 2
+        type: string
+      description:
+        maxLength: 1000
+        minLength: 2
+        type: string
+      imageUrl:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      variants:
+        items:
+          $ref: '#/definitions/product.createProductVariantDTO'
+        type: array
+    required:
+    - name
+    - variants
+    type: object
+  product.createProductVariantDTO:
+    properties:
+      color:
+        maxLength: 30
+        minLength: 1
+        type: string
+      price:
+        type: number
+      size:
+        maxLength: 30
+        minLength: 1
+        type: string
+      sku:
+        maxLength: 50
+        minLength: 2
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - price
+    - sku
+    - stock
+    type: object
+  product.createVariantDTO:
+    properties:
+      color:
+        maxLength: 30
+        minLength: 1
+        type: string
+      price:
+        type: number
+      size:
+        maxLength: 30
+        minLength: 1
+        type: string
+      sku:
+        maxLength: 50
+        minLength: 2
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - price
+    - sku
+    - stock
+    type: object
+  product.updateProductDTO:
+    properties:
+      category:
+        maxLength: 50
+        minLength: 2
+        type: string
+      description:
+        maxLength: 1000
+        minLength: 2
+        type: string
+      imageUrl:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  product.updateVariantDTO:
+    properties:
+      color:
+        maxLength: 30
+        minLength: 1
+        type: string
+      price:
+        type: number
+      size:
+        maxLength: 30
+        minLength: 1
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+    type: object
+  response.APIResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data: {}
+      message:
+        example: success
         type: string
     type: object
   types.WebhookEvent:
@@ -618,6 +757,326 @@ paths:
       summary: Update organization
       tags:
       - organizations
+  /products:
+    post:
+      consumes:
+      - application/json
+      description: Create a new product
+      parameters:
+      - description: Product payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.createProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create products
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: Delete a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete product
+      tags:
+      - products
+    get:
+      description: Get a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get product
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update product payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.updateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update product
+      tags:
+      - products
+  /products/{id}/variants/{id}:
+    delete:
+      description: Delete a variant by product ID and variant ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - description: Variant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete variant
+      tags:
+      - variants
+    get:
+      description: Get a variant by product ID and variant ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - description: variant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Variant'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get variant
+      tags:
+      - variants
+  /products/{productId}/variants:
+    post:
+      consumes:
+      - application/json
+      description: Create a new variant
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - description: Variant payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.createVariantDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Variant'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create variant
+      tags:
+      - variants
+  /products/{productId}/variants/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update an existing variant by product ID and variant ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - description: Variant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update variant payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.updateVariantDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Variant'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update variant
+      tags:
+      - variants
   /users/me:
     get:
       description: Get an authenticated user
