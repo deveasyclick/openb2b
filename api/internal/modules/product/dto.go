@@ -55,11 +55,10 @@ type updateVariantDTO struct {
 }
 
 type updateProductDTO struct {
-	Name        *string            `json:"name" validate:"omitempty,min=2,max=100"`
-	Category    *string            `json:"category" validate:"omitempty,min=2,max=50"`
-	ImageURL    *string            `json:"imageUrl" validate:"omitempty,url"`
-	Description *string            `json:"description" validate:"omitempty,min=2,max=1000"`
-	Variants    []updateVariantDTO `json:"variants" validate:"omitempty,dive"`
+	Name        *string `json:"name" validate:"omitempty,min=2,max=100"`
+	Category    *string `json:"category" validate:"omitempty,min=2,max=50"`
+	ImageURL    *string `json:"imageUrl" validate:"omitempty,url"`
+	Description *string `json:"description" validate:"omitempty,min=2,max=1000"`
 }
 
 func (dto *updateProductDTO) ApplyModel(product *model.Product) {

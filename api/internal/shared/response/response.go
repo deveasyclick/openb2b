@@ -34,16 +34,16 @@ func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError, logger inter
 
 // APIResponse is a standard success response wrapper
 type APIResponse struct {
-	Code    int         `json:"code" example:"200"`
-	Message string      `json:"message" example:"success"`
-	Data    interface{} `json:"data,omitempty"`
+	Code    int    `json:"code" example:"200"`
+	Message string `json:"message" example:"success"`
+	Data    any    `json:"data,omitempty"`
 }
 
 // WriteJSONSuccess writes a structured success response
 func WriteJSONSuccess(w http.ResponseWriter, statusCode int, data any, logger interfaces.Logger) {
 	resp := APIResponse{
 		Code:    statusCode,
-		Message: http.StatusText(statusCode), // "OK", "Created", etc.
+		Message: "success",
 		Data:    data,
 	}
 

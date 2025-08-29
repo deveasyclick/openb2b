@@ -30,8 +30,9 @@ func NewHandler(service interfaces.ProductService, appCtx *deps.AppContext) inte
 // @Accept json
 // @Produce json
 // @Param request body createProductDTO true "Product payload"
-// @Success 200 {object} model.Product
+// @Success 200 {object} response.APIResponse{data=model.Product}
 // @Failure      400  {object}  apperrors.APIErrorResponse
+// @Failure      409  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
 // @Router /products [post]
 // @Security BearerAuth
@@ -99,8 +100,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path int true "Product ID"
 // @Param request body updateProductDTO true "Update product payload"
-// @Success 200 {object} model.Product
-// @Failure 404 {object} apperrors.APIErrorResponse
+// @Success 200 {object} response.APIResponse{data=model.Product}
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
 // @Router /products/{id} [put]
@@ -154,7 +154,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {integer} int "Deleted product ID"
+// @Success 200 {integer} response.APIResponse{data=int}
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -189,10 +189,10 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} model.Product
+// @Success 200 {object} response.APIResponse{data=model.Product}
+// @Failure 400 {object} apperrors.APIErrorResponse
 // @Failure 404 {object} apperrors.APIErrorResponse
-// @Failure 400  {object}  apperrors.APIErrorResponse
-// @Failure 500  {object}  apperrors.APIErrorResponse
+// @Failure 500 {object} apperrors.APIErrorResponse
 // @Router /products/{id} [get]
 // @Security BearerAuth
 func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
@@ -227,8 +227,9 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param request body createVariantDTO true "Variant payload"
-// @Success 200 {object} model.Variant
+// @Success 200 {object} response.APIResponse{data=model.Variant}
 // @Failure      400  {object}  apperrors.APIErrorResponse
+// @Failure      409  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
 // @Router /products/{id}/variants [post]
 // @Security BearerAuth
@@ -295,10 +296,9 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Variant ID"
-// @params productId path int true "Product ID"
+// @params productId path response.APIResponse{data=uint}
 // @Param request body updateVariantDTO true "Update variant payload"
 // @Success 200 {object} model.Variant
-// @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
 // @Router /products/{productId}/variants/{id} [put]
@@ -362,7 +362,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param productId path int true "Product ID"
 // @Param id path int true "Variant ID"
-// @Success 200 {integer} int "Deleted variant ID"
+// @Success 200 {integer} response.APIResponse{data=int}
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -407,7 +407,7 @@ func (h *ProductHandler) DeleteVariant(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param productId path int true "Product ID"
 // @Param id path int true "variant ID"
-// @Success 200 {object} model.Variant
+// @Success 200 {object} response.APIResponse{data=model.Variant}
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
