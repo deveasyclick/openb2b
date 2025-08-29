@@ -63,7 +63,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Check if product already exists
 	exists, err := h.service.Exists(ctx, map[string]any{"name": product.Name})
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
 			Message:     apperrors.ErrCreateProduct,
@@ -215,7 +215,7 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := h.service.FindByID(ctx, uint(id))
+	product, err := h.service.FindOneWithFields(ctx, nil, map[string]any{"id": id}, []string{"Variants"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.WriteJSONError(w, &apperrors.APIError{
@@ -240,17 +240,27 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 // Create godoc
 // @Summary Create variant
 // @Description Create a new variant
-// @Tags products
+// @Tags variants
 // @Accept json
 // @Produce json
+// @Param productId path int true "Product ID"
 // @Param request body createVariantDTO true "Variant payload"
 // @Success 200 {object} response.APIResponse{data=model.Variant}
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
-// @Router /products/{id}/variants [post]
+// @Router /products/{productId}/variants [post]
 // @Security BearerAuth
 func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
+	productId, err := strconv.ParseUint(chi.URLParam(r, "productId"), 10, 64)
+	if err != nil {
+		response.WriteJSONError(w, &apperrors.APIError{
+			Code:    http.StatusBadRequest,
+			Message: apperrors.ErrInvalidId,
+		}, h.appCtx.Logger)
+		return
+	}
+
 	ctx := r.Context()
 	var req createVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
@@ -273,10 +283,11 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	// Convert request to model
 	variant := req.ToModel()
 	variant.OrgID = userFromContext.Org
+	variant.ProductID = uint(productId)
 
 	// Check if variant already exists
-	exists, err := h.service.Exists(ctx, map[string]any{"sku": variant.SKU})
-	if err != nil {
+	exists, err := h.service.CheckVariantExists(ctx, variant.SKU)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
 			Message:     apperrors.ErrCreateVariant,
@@ -289,7 +300,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	if exists {
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:    http.StatusConflict,
-			Message: fmt.Sprintf("%s: sku %s", apperrors.ErrProductAlreadyExists, variant.SKU),
+			Message: fmt.Sprintf("%s: sku %s", apperrors.ErrVariantAlreadyExists, variant.SKU),
 		}, h.appCtx.Logger)
 		return
 	}
@@ -309,11 +320,11 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 // Update godoc
 // @Summary Update variant
 // @Description Update an existing variant by product ID and variant ID
-// @Tags products
+// @Tags variants
 // @Accept json
 // @Produce json
+// @param productId path int true "Product ID"
 // @Param id path int true "Variant ID"
-// @params productId path response.APIResponse{data=uint}
 // @Param request body updateVariantDTO true "Update variant payload"
 // @Success 200 {object} model.Variant
 // @Failure 400  {object}  apperrors.APIErrorResponse
@@ -375,7 +386,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 // Delete godoc
 // @Summary Delete variant
 // @Description Delete a variant by product ID and variant ID
-// @Tags products
+// @Tags variants
 // @Produce json
 // @Param productId path int true "Product ID"
 // @Param id path int true "Variant ID"
@@ -428,7 +439,7 @@ func (h *ProductHandler) DeleteVariant(w http.ResponseWriter, r *http.Request) {
 // Get godoc
 // @Summary Get variant
 // @Description Get a variant by product ID and variant ID
-// @Tags products
+// @Tags variants
 // @Produce json
 // @Param productId path int true "Product ID"
 // @Param id path int true "variant ID"
