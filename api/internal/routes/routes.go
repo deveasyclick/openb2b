@@ -9,6 +9,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/middleware"
 	"github.com/deveasyclick/openb2b/internal/modules/clerk"
 	"github.com/deveasyclick/openb2b/internal/modules/org"
+	"github.com/deveasyclick/openb2b/internal/modules/product"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
 	"github.com/deveasyclick/openb2b/internal/modules/webhook"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
@@ -56,6 +57,11 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 	createOrgUseCase := org.NewCreateUseCase(orgService, userService, clerkService, appCtx)
 	orgHandler := org.NewHandler(orgService, createOrgUseCase, appCtx)
 
+	// Product
+	productRepository := product.NewRepository(appCtx.DB)
+	productService := product.NewService(productRepository)
+	productHandler := product.NewHandler(productService, appCtx)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
 
@@ -69,6 +75,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 			r.Use(middleware.AuthRequiredMiddleware())
 			registerOrgRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
+			registerProductRoutes(r, productHandler)
 		})
 	})
 
