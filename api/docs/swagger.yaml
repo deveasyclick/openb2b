@@ -230,6 +230,7 @@ definitions:
     - phone
     type: object
   model.Product:
+    description: Product response model
     properties:
       category:
         type: string
@@ -304,6 +305,7 @@ definitions:
     - lastName
     type: object
   model.Variant:
+    description: Variant response model
     properties:
       color:
         type: string
@@ -522,8 +524,6 @@ definitions:
         type: string
       price:
         type: number
-      productId:
-        type: integer
       size:
         maxLength: 30
         minLength: 1
@@ -537,7 +537,6 @@ definitions:
         type: integer
     required:
     - price
-    - productId
     - sku
     - stock
     type: object
@@ -564,17 +563,11 @@ definitions:
         maxLength: 30
         minLength: 1
         type: string
-      id:
-        type: integer
       price:
         type: number
       size:
         maxLength: 30
         minLength: 1
-        type: string
-      sku:
-        maxLength: 50
-        minLength: 2
         type: string
       stock:
         minimum: 0
@@ -916,47 +909,6 @@ paths:
       summary: Update product
       tags:
       - products
-  /products/{id}/variants:
-    post:
-      consumes:
-      - application/json
-      description: Create a new variant
-      parameters:
-      - description: Variant payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/product.createVariantDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Variant'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.APIErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/apperrors.APIErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.APIErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create variant
-      tags:
-      - products
   /products/{id}/variants/{id}:
     delete:
       description: Delete a variant by product ID and variant ID
@@ -994,7 +946,7 @@ paths:
       - BearerAuth: []
       summary: Delete variant
       tags:
-      - products
+      - variants
     get:
       description: Get a variant by product ID and variant ID
       parameters:
@@ -1036,13 +988,64 @@ paths:
       - BearerAuth: []
       summary: Get variant
       tags:
-      - products
+      - variants
+  /products/{productId}/variants:
+    post:
+      consumes:
+      - application/json
+      description: Create a new variant
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - description: Variant payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.createVariantDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Variant'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create variant
+      tags:
+      - variants
   /products/{productId}/variants/{id}:
     put:
       consumes:
       - application/json
       description: Update an existing variant by product ID and variant ID
       parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
       - description: Variant ID
         in: path
         name: id
@@ -1073,7 +1076,7 @@ paths:
       - BearerAuth: []
       summary: Update variant
       tags:
-      - products
+      - variants
   /users/me:
     get:
       description: Get an authenticated user

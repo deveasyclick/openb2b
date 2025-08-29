@@ -490,75 +490,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/{id}/variants": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new variant",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Create variant",
-                "parameters": [
-                    {
-                        "description": "Variant payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/product.createVariantDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Variant"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.APIErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.APIErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.APIErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/products/{id}/variants/{id}": {
             "get": {
                 "security": [
@@ -571,7 +502,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "variants"
                 ],
                 "summary": "Get variant",
                 "parameters": [
@@ -640,7 +571,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "variants"
                 ],
                 "summary": "Delete variant",
                 "parameters": [
@@ -687,6 +618,82 @@ const docTemplate = `{
                 }
             }
         },
+        "/products/{productId}/variants": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new variant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "variants"
+                ],
+                "summary": "Create variant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "productId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Variant payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/product.createVariantDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Variant"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/products/{productId}/variants/{id}": {
             "put": {
                 "security": [
@@ -702,10 +709,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "variants"
                 ],
                 "summary": "Update variant",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "productId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "Variant ID",
@@ -1175,6 +1189,7 @@ const docTemplate = `{
             }
         },
         "model.Product": {
+            "description": "Product response model",
             "type": "object",
             "properties": {
                 "category": {
@@ -1283,6 +1298,7 @@ const docTemplate = `{
             }
         },
         "model.Variant": {
+            "description": "Variant response model",
             "type": "object",
             "properties": {
                 "color": {
@@ -1530,7 +1546,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "price",
-                "productId",
                 "sku",
                 "stock"
             ],
@@ -1542,9 +1557,6 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "number"
-                },
-                "productId": {
-                    "type": "integer"
                 },
                 "size": {
                     "type": "string",
@@ -1593,9 +1605,6 @@ const docTemplate = `{
                     "maxLength": 30,
                     "minLength": 1
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "price": {
                     "type": "number"
                 },
@@ -1603,11 +1612,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 30,
                     "minLength": 1
-                },
-                "sku": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 2
                 },
                 "stock": {
                     "type": "integer",
