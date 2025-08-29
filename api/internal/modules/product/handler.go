@@ -1,6 +1,7 @@
 package product
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
+	"gorm.io/gorm"
 )
 
 type ProductHandler struct {
@@ -172,6 +174,14 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(ctx, uint(id)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONError(w, &apperrors.APIError{
+				Code:    http.StatusNotFound,
+				Message: fmt.Sprintf("%s: id %d", apperrors.ErrProductNotFound, uint(id)),
+			}, h.appCtx.Logger)
+			return
+		}
+
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
 			Message:     apperrors.ErrDeleteProduct,
@@ -208,6 +218,14 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	product, err := h.service.FindByID(ctx, uint(id))
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONError(w, &apperrors.APIError{
+				Code:    http.StatusNotFound,
+				Message: fmt.Sprintf("%s: id %d", apperrors.ErrProductNotFound, uint(id)),
+			}, h.appCtx.Logger)
+			return
+		}
+
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
 			Message:     apperrors.ErrFindProduct,
@@ -389,6 +407,14 @@ func (h *ProductHandler) DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.DeleteVariant(ctx, uint(productId), uint(id)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONError(w, &apperrors.APIError{
+				Code:    http.StatusNotFound,
+				Message: fmt.Sprintf("%s: id %d", apperrors.ErrVariantNotFound, uint(id)),
+			}, h.appCtx.Logger)
+			return
+		}
+
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:        http.StatusInternalServerError,
 			Message:     apperrors.ErrDeleteVariant,
