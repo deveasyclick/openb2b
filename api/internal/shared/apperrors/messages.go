@@ -36,6 +36,7 @@ const (
 	ErrUpdateProduct        = "error updating product"
 	ErrDeleteProduct        = "error deleting product"
 	ErrFindProduct          = "error finding product"
+	ErrProductNotFound      = "product not found"
 
 	// Variant
 	ErrVariantAlreadyExists = "variant already exists"
@@ -43,4 +44,5 @@ const (
 	ErrUpdateVariant        = "error updating variant"
 	ErrDeleteVariant        = "error deleting variant"
 	ErrFindVariant          = "error finding variant"
+	ErrVariantNotFound      = "variant not found"
 )
