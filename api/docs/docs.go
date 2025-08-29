@@ -1465,7 +1465,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "orgId",
                 "variants"
             ],
             "properties": {
@@ -1486,9 +1485,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 2
-                },
-                "orgId": {
-                    "type": "integer"
                 },
                 "variants": {
                     "type": "array",

@@ -1459,7 +1459,6 @@
             "type": "object",
             "required": [
                 "name",
-                "orgId",
                 "variants"
             ],
             "properties": {
@@ -1480,9 +1479,6 @@
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 2
-                },
-                "orgId": {
-                    "type": "integer"
                 },
                 "variants": {
                     "type": "array",
