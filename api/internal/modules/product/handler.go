@@ -85,7 +85,7 @@ func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req createProductDTO
+	var req CreateProductDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		h.appCtx.Logger.Error(apperrors.ErrInvalidRequestBody, "errors", errors)
 		validator.WriteValidationResponse(w, errors)
@@ -162,7 +162,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req updateProductDTO
+	var req UpdateProductDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
@@ -307,7 +307,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	var req createVariantDTO
+	var req CreateVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		h.appCtx.Logger.Error(apperrors.ErrInvalidRequestBody, "errors", errors)
 		validator.WriteValidationResponse(w, errors)
@@ -396,7 +396,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req updateVariantDTO
+	var req UpdateVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
