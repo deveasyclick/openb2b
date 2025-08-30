@@ -6,15 +6,19 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
+	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
 	"gorm.io/gorm"
 )
+
+var allowedProductSearchFields = map[string]bool{"name": true, "last_name": true, "phone_number": true, "email": true}
 
 type ProductHandler struct {
 	service interfaces.ProductService
@@ -23,6 +27,47 @@ type ProductHandler struct {
 
 func NewHandler(service interfaces.ProductService, appCtx *deps.AppContext) interfaces.ProductHandler {
 	return &ProductHandler{service: service, appCtx: appCtx}
+}
+
+// Filter godoc
+// @Summary      List products with filtering and pagination
+// @Description  Returns a paginated list of products. Supports filtering, sorting, searching, and preloading.
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        page          query     int     false  "Page number (default: 1)"
+// @Param        limit         query     int     false  "Number of items per page (default: 20, max: 100)"
+// @Param        sort          query     string  false  "Sort by field, e.g. 'created_at desc'"
+// @Param        preloads      query     string  false  "Comma-separated list of relations to preload. relation must start with uppercase"
+// @Param        search_fields query     string  false  "Comma-separated list of fields to search (must be allowed)"
+// @Param        name          query     string  false  "Filter by product name"
+// @Param        last_name     query     string  false  "Filter by last name"
+// @Param        phone_number  query     string  false  "Filter by phone number"
+// @Param        email         query     string  false  "Filter by email"
+// @Success      200           {object}  response.APIResponse{data=model.Product}
+// @Failure      400           {object}  apperrors.APIError "Invalid filter parameters"
+// @Failure      500           {object}  apperrors.APIError "Internal server error"
+// @Router       /products [get]
+// @Security BearerAuth
+func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
+	opts, err := pagination.ParsePaginationOptions(r.URL.Query(), allowedProductSearchFields)
+	if err != nil {
+		response.WriteBadRequestError(w, err, h.appCtx.Logger)
+		return
+	}
+
+	products, total, err := h.service.Filter(r.Context(), opts)
+	if err != nil {
+		response.WriteInternalError(w, err, apperrors.ErrFilterProduct, h.appCtx.Logger)
+		return
+	}
+
+	resp := response.FilterResponse[model.Product]{
+		Pagination: pagination.BuildPagination(total, opts),
+		Items:      products,
+	}
+
+	response.WriteJSONSuccess(w, http.StatusOK, resp, h.appCtx.Logger)
 }
 
 // Create godoc
@@ -104,7 +149,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} response.APIResponse{data=model.Product}
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
-// @Router /products/{id} [put]
+// @Router /products/{id} [patch]
 // @Security BearerAuth
 func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -329,7 +374,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Variant
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
-// @Router /products/{productId}/variants/{id} [put]
+// @Router /products/{productId}/variants/{id} [patch]
 // @Security BearerAuth
 func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

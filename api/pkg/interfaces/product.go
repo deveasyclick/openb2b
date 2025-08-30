@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/model"
+	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,7 @@ type ProductService interface {
 	FindByID(ctx context.Context, ID uint) (*model.Product, error)
 	Exists(ctx context.Context, where map[string]any) (bool, error)
 	FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Product, error)
+	Filter(ctx context.Context, opts pagination.Options) ([]model.Product, int64, error)
 	WithTx(tx *gorm.DB) ProductService
 
 	// Varaiants
@@ -29,7 +31,7 @@ type ProductRepository interface {
 	Create(ctx context.Context, product *model.Product) error
 	Update(ctx context.Context, product *model.Product) error
 	FindByID(ctx context.Context, ID uint) (*model.Product, error)
-	Filter(ctx context.Context) ([]model.Product, error)
+	Filter(ctx context.Context, opts pagination.Options) ([]model.Product, int64, error)
 	Delete(ctx context.Context, ID uint) error
 	FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Product, error)
 	WithTx(tx *gorm.DB) ProductRepository
@@ -47,6 +49,7 @@ type ProductHandler interface {
 	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request)
+	Filter(w http.ResponseWriter, r *http.Request)
 
 	// Variants
 	CreateVariant(w http.ResponseWriter, r *http.Request)

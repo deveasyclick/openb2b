@@ -1,5 +1,15 @@
 basePath: /api/v1
 definitions:
+  apperrors.APIError:
+    properties:
+      code:
+        type: integer
+      internalMsg:
+        description: detailed message for logs if code is 500
+        type: string
+      message:
+        type: string
+    type: object
   apperrors.APIErrorResponse:
     description: Error response object
     properties:
@@ -309,14 +319,16 @@ definitions:
     properties:
       color:
         type: string
+      created_at:
+        type: string
       id:
         type: integer
-      orgID:
+      orgId:
         description: needed for sku uniqueness per org
         type: integer
       price:
         type: number
-      productID:
+      productId:
         type: integer
       size:
         type: string
@@ -324,6 +336,8 @@ definitions:
         type: string
       stock:
         type: integer
+      updated_at:
+        type: string
     type: object
   org.Address:
     description: Address
@@ -374,6 +388,34 @@ definitions:
     - country
     - state
     - zip
+    type: object
+  org.UpdateAddressDTO:
+    properties:
+      address:
+        example: 123 Market Street
+        maxLength: 100
+        minLength: 5
+        type: string
+      city:
+        example: San Francisco
+        maxLength: 30
+        minLength: 2
+        type: string
+      country:
+        example: USA
+        maxLength: 100
+        minLength: 2
+        type: string
+      state:
+        example: California
+        maxLength: 30
+        minLength: 2
+        type: string
+      zip:
+        example: "02912"
+        maxLength: 30
+        minLength: 2
+        type: string
     type: object
   org.createDTO:
     description: Organization creation request
@@ -435,7 +477,7 @@ definitions:
     properties:
       address:
         allOf:
-        - $ref: '#/definitions/org.Address'
+        - $ref: '#/definitions/org.UpdateAddressDTO'
         description: Address of the organization
       email:
         description: Contact email
@@ -758,6 +800,74 @@ paths:
       tags:
       - organizations
   /products:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of products. Supports filtering, sorting,
+        searching, and preloading.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by field, e.g. 'created_at desc'
+        in: query
+        name: sort
+        type: string
+      - description: Comma-separated list of relations to preload. relation must start
+          with uppercase
+        in: query
+        name: preloads
+        type: string
+      - description: Comma-separated list of fields to search (must be allowed)
+        in: query
+        name: search_fields
+        type: string
+      - description: Filter by product name
+        in: query
+        name: name
+        type: string
+      - description: Filter by last name
+        in: query
+        name: last_name
+        type: string
+      - description: Filter by phone number
+        in: query
+        name: phone_number
+        type: string
+      - description: Filter by email
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Product'
+              type: object
+        "400":
+          description: Invalid filter parameters
+          schema:
+            $ref: '#/definitions/apperrors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperrors.APIError'
+      security:
+      - BearerAuth: []
+      summary: List products with filtering and pagination
+      tags:
+      - products
     post:
       consumes:
       - application/json
@@ -868,7 +978,7 @@ paths:
       summary: Get product
       tags:
       - products
-    put:
+    patch:
       consumes:
       - application/json
       description: Update an existing product by ID
@@ -1036,7 +1146,7 @@ paths:
       tags:
       - variants
   /products/{productId}/variants/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update an existing variant by product ID and variant ID

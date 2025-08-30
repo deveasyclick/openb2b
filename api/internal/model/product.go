@@ -12,16 +12,3 @@ type Product struct {
 	Description string    `json:"description"`
 	Variants    []Variant `json:"variants" gorm:"foreignKey:ProductID"`
 }
-
-// Variant represents an variant entity
-// @Description Variant response model
-type Variant struct {
-	ID        uint `gorm:"primaryKey"`
-	ProductID uint `gorm:"index;not null"`
-	Color     string
-	Size      string
-	Price     float64 `gorm:"not null"`
-	Stock     int     `gorm:"not null"`
-	SKU       string  `gorm:"not null;uniqueIndex:idx_org_sku"`
-	OrgID     uint    `gorm:"not null;uniqueIndex:idx_org_sku"` //needed for sku uniqueness per org
-}

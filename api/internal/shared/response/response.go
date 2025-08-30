@@ -8,8 +8,14 @@ import (
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
+
+type FilterResponse[T any] struct {
+	Items      []T                   `json:"items"`
+	Pagination pagination.Pagination `json:"pagination"`
+}
 
 // WriteJSONError writes a JSON-encoded error response to the given http.ResponseWriter
 // using the provided *apperrors.APIError. It sets the appropriate HTTP status code
@@ -28,6 +34,32 @@ func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError, logger inter
 
 	w.WriteHeader(err.Code)
 	if encodeErr := json.NewEncoder(w).Encode(err.ToResponse()); encodeErr != nil {
+		logger.Error("failed to encode API error response", "err", encodeErr)
+	}
+}
+
+func WriteInternalError(w http.ResponseWriter, err error, msg string, logger interfaces.Logger) {
+	logger.Error(msg, "err", err.Error())
+
+	w.WriteHeader(http.StatusInternalServerError)
+	apiError := apperrors.APIError{
+		Code:        http.StatusInternalServerError,
+		Message:     msg,
+		InternalMsg: err.Error(),
+	}
+	if encodeErr := json.NewEncoder(w).Encode(apiError.ToResponse()); encodeErr != nil {
+		logger.Error("failed to encode API error response", "err", encodeErr)
+	}
+}
+
+func WriteBadRequestError(w http.ResponseWriter, err error, logger interfaces.Logger) {
+
+	w.WriteHeader(http.StatusBadRequest)
+	apiError := apperrors.APIError{
+		Code:    http.StatusBadRequest,
+		Message: err.Error(),
+	}
+	if encodeErr := json.NewEncoder(w).Encode(apiError.ToResponse()); encodeErr != nil {
 		logger.Error("failed to encode API error response", "err", encodeErr)
 	}
 }
