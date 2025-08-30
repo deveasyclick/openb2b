@@ -75,4 +75,4 @@ swagger:
 
 .PHONY: test
 test:
-	cd api && go test ./... | grep -v 'no test files'
+	cd api && go test -count=1 ./... | grep -v 'no test files'

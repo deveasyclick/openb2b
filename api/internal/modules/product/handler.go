@@ -52,13 +52,13 @@ func NewHandler(service interfaces.ProductService, appCtx *deps.AppContext) inte
 func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
 	opts, err := pagination.ParsePaginationOptions(r.URL.Query(), allowedProductSearchFields)
 	if err != nil {
-		response.WriteBadRequestError(w, err, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrFilterProduct, h.appCtx.Logger)
 		return
 	}
 
 	products, total, err := h.service.Filter(r.Context(), opts)
 	if err != nil {
-		response.WriteInternalError(w, err, apperrors.ErrFilterProduct, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrFilterProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -86,20 +86,14 @@ func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req CreateProductDTO
-	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
-		h.appCtx.Logger.Error(apperrors.ErrInvalidRequestBody, "errors", errors)
-		validator.WriteValidationResponse(w, errors)
+	if errs := validator.ValidateRequest(r, &req); len(errs) > 0 {
+		validator.WriteValidationResponse(w, errs)
 		return
 	}
 
 	userFromContext, err := identity.UserFromContext(ctx)
 	if err != nil {
-		h.appCtx.Logger.Error(apperrors.ErrUserFromContext, "err", err)
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateProduct,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrUserFromContext, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -109,29 +103,18 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// Check if product already exists
 	exists, err := h.service.Exists(ctx, map[string]any{"name": product.Name})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateProduct,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateProduct, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateProduct, h.appCtx.Logger)
 		return
 	}
 
 	// Return already exists error if product already exists
 	if exists {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusConflict,
-			Message: fmt.Sprintf("%s: name %s", apperrors.ErrProductAlreadyExists, product.Name),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusConflict, nil, fmt.Sprintf("%s: name %s", apperrors.ErrProductAlreadyExists, product.Name), h.appCtx.Logger)
 		return
 	}
 
 	if err = h.service.Create(ctx, &product); err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateProduct,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateProduct, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -155,10 +138,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: fmt.Sprintf("%s: %d", apperrors.ErrInvalidId, id),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
 
@@ -171,11 +151,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// Get existing product
 	existingProduct, err := h.service.FindByID(ctx, uint(id))
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrUpdateProduct,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateProduct, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -183,11 +159,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	req.ApplyModel(existingProduct)
 
 	if err := h.service.Update(ctx, existingProduct); err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrUpdateProduct,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateProduct, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -210,27 +182,17 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
 
 	if err := h.service.Delete(ctx, uint(id)); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.WriteJSONError(w, &apperrors.APIError{
-				Code:    http.StatusNotFound,
-				Message: fmt.Sprintf("%s: id %d", apperrors.ErrProductNotFound, uint(id)),
-			}, h.appCtx.Logger)
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrProductNotFound, h.appCtx.Logger)
 			return
 		}
 
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrDeleteProduct,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrDeleteProduct, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrDeleteProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -253,28 +215,18 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
 
 	product, err := h.service.FindOneWithFields(ctx, nil, map[string]any{"id": id}, []string{"Variants"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.WriteJSONError(w, &apperrors.APIError{
-				Code:    http.StatusNotFound,
-				Message: fmt.Sprintf("%s: id %d", apperrors.ErrProductNotFound, uint(id)),
-			}, h.appCtx.Logger)
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrProductNotFound, h.appCtx.Logger)
 			return
 		}
 
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrFindProduct,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrFindProduct, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrFindProduct, h.appCtx.Logger)
 		return
 	}
 
@@ -299,29 +251,20 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	productId, err := strconv.ParseUint(chi.URLParam(r, "productId"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
 
 	ctx := r.Context()
 	var req CreateVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
-		h.appCtx.Logger.Error(apperrors.ErrInvalidRequestBody, "errors", errors)
 		validator.WriteValidationResponse(w, errors)
 		return
 	}
 
 	userFromContext, err := identity.UserFromContext(ctx)
 	if err != nil {
-		h.appCtx.Logger.Error(apperrors.ErrUserFromContext, "err", err)
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateProduct,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrUserFromContext, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateVariant, h.appCtx.Logger)
 		return
 	}
 
@@ -333,29 +276,18 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	// Check if variant already exists
 	exists, err := h.service.CheckVariantExists(ctx, variant.SKU)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateVariant,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateVariant, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateVariant, h.appCtx.Logger)
 		return
 	}
 
 	// Return already exists error if variant already exists
 	if exists {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusConflict,
-			Message: fmt.Sprintf("%s: sku %s", apperrors.ErrVariantAlreadyExists, variant.SKU),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusConflict, nil, fmt.Sprintf("%s: sku %s", apperrors.ErrVariantAlreadyExists, variant.SKU), h.appCtx.Logger)
 		return
 	}
 
 	if err = h.service.CreateVariant(ctx, &variant); err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateVariant,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateVariant, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateVariant, h.appCtx.Logger)
 		return
 	}
 
@@ -380,19 +312,13 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	productId, err := strconv.ParseUint(chi.URLParam(r, "productId"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: fmt.Sprintf("%s: %d", apperrors.ErrInvalidId, productId),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("%s: productId %d", apperrors.ErrInvalidId, productId), h.appCtx.Logger)
 		return
 	}
 
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: fmt.Sprintf("%s: %d", apperrors.ErrInvalidId, id),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("%s: variantId %d", apperrors.ErrInvalidId, productId), h.appCtx.Logger)
 		return
 	}
 
@@ -405,11 +331,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	// Get existing variant
 	existingVariant, err := h.service.FindVariantByID(ctx, uint(productId), uint(id))
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrUpdateVariant,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateVariant, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateVariant, h.appCtx.Logger)
 		return
 	}
 
@@ -417,11 +339,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	req.ApplyModel(existingVariant)
 
 	if err := h.service.UpdateVariant(ctx, existingVariant); err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrUpdateVariant,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateVariant, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateVariant, h.appCtx.Logger)
 		return
 	}
 
@@ -445,36 +363,23 @@ func (h *ProductHandler) DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	productId, err := strconv.ParseUint(chi.URLParam(r, "productId"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("%s: productId %d", apperrors.ErrInvalidId, productId), h.appCtx.Logger)
 		return
 	}
 
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("%s: variantId %d", apperrors.ErrInvalidId, productId), h.appCtx.Logger)
 		return
 	}
 
 	if err := h.service.DeleteVariant(ctx, uint(productId), uint(id)); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.WriteJSONError(w, &apperrors.APIError{
-				Code:    http.StatusNotFound,
-				Message: fmt.Sprintf("%s: id %d", apperrors.ErrVariantNotFound, uint(id)),
-			}, h.appCtx.Logger)
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrVariantNotFound, h.appCtx.Logger)
 			return
 		}
 
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrDeleteVariant,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrDeleteVariant, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrDeleteVariant, h.appCtx.Logger)
 		return
 	}
 
@@ -498,29 +403,19 @@ func (h *ProductHandler) GetVariant(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	productId, err := strconv.ParseUint(chi.URLParam(r, "productId"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("%s: productId %d", apperrors.ErrInvalidId, productId), h.appCtx.Logger)
 		return
 	}
 
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: apperrors.ErrInvalidId,
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("%s: variantId %d", apperrors.ErrInvalidId, productId), h.appCtx.Logger)
 		return
 	}
 
 	variant, err := h.service.FindVariantByID(ctx, uint(productId), uint(id))
 	if err != nil {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrFindVariant,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrFindVariant, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrFindVariant, h.appCtx.Logger)
 		return
 	}
 

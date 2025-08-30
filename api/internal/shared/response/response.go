@@ -38,28 +38,18 @@ func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError, logger inter
 	}
 }
 
-func WriteInternalError(w http.ResponseWriter, err error, msg string, logger interfaces.Logger) {
-	logger.Error(msg, "err", err.Error())
-
-	w.WriteHeader(http.StatusInternalServerError)
-	apiError := apperrors.APIError{
-		Code:        http.StatusInternalServerError,
-		Message:     msg,
-		InternalMsg: err.Error(),
+func WriteJSONErrorV2(w http.ResponseWriter, code int, internalError error, msg string, logger interfaces.Logger) {
+	if code == http.StatusInternalServerError {
+		logger.Error(msg, "err", internalError.Error())
 	}
-	if encodeErr := json.NewEncoder(w).Encode(apiError.ToResponse()); encodeErr != nil {
-		logger.Error("failed to encode API error response", "err", encodeErr)
-	}
-}
 
-func WriteBadRequestError(w http.ResponseWriter, err error, logger interfaces.Logger) {
-
-	w.WriteHeader(http.StatusBadRequest)
-	apiError := apperrors.APIError{
-		Code:    http.StatusBadRequest,
-		Message: err.Error(),
+	w.WriteHeader(code)
+	apiError := apperrors.APIErrorResponse{
+		Code:    code,
+		Message: msg,
 	}
-	if encodeErr := json.NewEncoder(w).Encode(apiError.ToResponse()); encodeErr != nil {
+
+	if encodeErr := json.NewEncoder(w).Encode(apiError); encodeErr != nil {
 		logger.Error("failed to encode API error response", "err", encodeErr)
 	}
 }
