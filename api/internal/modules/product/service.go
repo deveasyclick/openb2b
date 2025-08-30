@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/deveasyclick/openb2b/internal/model"
+	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"gorm.io/gorm"
 )
@@ -28,8 +29,8 @@ func (s *service) FindByID(ctx context.Context, ID uint) (*model.Product, error)
 	return s.repo.FindOneWithFields(ctx, nil, map[string]any{"id": ID}, nil)
 }
 
-func (s *service) Filter(ctx context.Context, where map[string]any) ([]model.Product, error) {
-	return s.repo.Filter(ctx)
+func (s *service) Filter(ctx context.Context, opts pagination.Options) ([]model.Product, int64, error) {
+	return s.repo.Filter(ctx, opts)
 }
 
 func (s *service) Delete(ctx context.Context, ID uint) error {
