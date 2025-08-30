@@ -79,13 +79,15 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 		})
 	})
 
-	parsedURL, err := url.Parse(appCtx.Config.AppURL)
-	if err != nil {
-		appCtx.Logger.Warn("failed to parse app url", "err", err)
-	}
+	if appCtx.Config.Env == "development" {
+		parsedURL, err := url.Parse(appCtx.Config.AppURL)
+		if err != nil {
+			appCtx.Logger.Warn("failed to parse app url", "err", err)
+		}
 
-	docs.SwaggerInfo.Host = parsedURL.Host
-	r.Get("/swagger/*", swagger.Handler(
-		swagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", parsedURL.Host)),
-	))
+		docs.SwaggerInfo.Host = parsedURL.Host
+		r.Get("/swagger/*", swagger.Handler(
+			swagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", parsedURL.Host)),
+		))
+	}
 }
