@@ -3,6 +3,7 @@ package pagination
 import (
 	"net/url"
 	"regexp"
+	"sort"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -55,9 +56,15 @@ func TestParseFiltersFromQuery(t *testing.T) {
 	filters, err := parseFiltersFromQuery(values)
 	assert.NoError(t, err)
 	assert.Len(t, filters, 3)
-	assert.Equal(t, ">=", filters[0].Operator)
-	assert.Equal(t, "LIKE", filters[1].Operator)
-	assert.Equal(t, "IN", filters[2].Operator)
+
+	// Sort by field
+	sort.Slice(filters, func(i, j int) bool {
+		return filters[i].Field < filters[j].Field
+	})
+
+	assert.Equal(t, ">=", filters[0].Operator)   // e.g., "id"
+	assert.Equal(t, "LIKE", filters[1].Operator) // e.g., "name"
+	assert.Equal(t, "IN", filters[2].Operator)   // e.g., "price"
 }
 
 func TestPaginate(t *testing.T) {
