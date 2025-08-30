@@ -3,6 +3,7 @@ module github.com/deveasyclick/openb2b
 go 1.23.4
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/clerk/clerk-sdk-go/v2 v2.3.1
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/cors v1.2.2
