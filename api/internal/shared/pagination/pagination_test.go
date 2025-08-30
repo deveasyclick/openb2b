@@ -55,9 +55,16 @@ func TestParseFiltersFromQuery(t *testing.T) {
 	filters, err := parseFiltersFromQuery(values)
 	assert.NoError(t, err)
 	assert.Len(t, filters, 3)
-	assert.Equal(t, ">=", filters[0].Operator)
-	assert.Equal(t, "LIKE", filters[1].Operator)
-	assert.Equal(t, "IN", filters[2].Operator)
+
+	// map operators by field
+	ops := map[string]string{}
+	for _, f := range filters {
+		ops[f.Field] = f.Operator
+	}
+
+	assert.Equal(t, ">=", ops["price"])
+	assert.Equal(t, "LIKE", ops["name"])
+	assert.Equal(t, "IN", ops["id"])
 }
 
 func TestPaginate(t *testing.T) {

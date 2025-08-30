@@ -31,6 +31,7 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/deveasyclick/openb2b/internal/config"
 	"github.com/deveasyclick/openb2b/internal/db"
+	"github.com/deveasyclick/openb2b/internal/middleware"
 	"github.com/deveasyclick/openb2b/internal/routes"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/pkg/logger"
@@ -64,7 +65,9 @@ func main() {
 		Cache:  nil,
 	}
 
-	routes.Register(r, appCtx)
+	middlewares := middleware.New()
+
+	routes.Register(r, appCtx, middlewares)
 
 	port := cfg.Port
 	if port == 0 {
