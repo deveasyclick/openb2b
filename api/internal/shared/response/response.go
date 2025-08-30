@@ -38,6 +38,32 @@ func WriteJSONError(w http.ResponseWriter, err *apperrors.APIError, logger inter
 	}
 }
 
+func WriteInternalError(w http.ResponseWriter, err error, msg string, logger interfaces.Logger) {
+	logger.Error(msg, "err", err.Error())
+
+	w.WriteHeader(http.StatusInternalServerError)
+	apiError := apperrors.APIError{
+		Code:        http.StatusInternalServerError,
+		Message:     msg,
+		InternalMsg: err.Error(),
+	}
+	if encodeErr := json.NewEncoder(w).Encode(apiError.ToResponse()); encodeErr != nil {
+		logger.Error("failed to encode API error response", "err", encodeErr)
+	}
+}
+
+func WriteBadRequestError(w http.ResponseWriter, err error, logger interfaces.Logger) {
+
+	w.WriteHeader(http.StatusBadRequest)
+	apiError := apperrors.APIError{
+		Code:    http.StatusBadRequest,
+		Message: err.Error(),
+	}
+	if encodeErr := json.NewEncoder(w).Encode(apiError.ToResponse()); encodeErr != nil {
+		logger.Error("failed to encode API error response", "err", encodeErr)
+	}
+}
+
 // APIResponse is a standard success response wrapper
 type APIResponse struct {
 	Code    int    `json:"code" example:"200"`
