@@ -5,6 +5,7 @@ const (
 	ErrEncodeResponse     = "failed to encode response"
 	ErrInvalidId          = "invalid id"
 	ErrInvalidRequestBody = "invalid request body"
+	ErrInvalidFilter      = "invalid filter"
 
 	// Customer
 	ErrCustomerNotFound = "customer not found"
@@ -37,6 +38,7 @@ const (
 	ErrDeleteProduct        = "error deleting product"
 	ErrFindProduct          = "error finding product"
 	ErrProductNotFound      = "product not found"
+	ErrFilterProduct        = "error filtering products"
 
 	// Variant
 	ErrVariantAlreadyExists = "variant already exists"
