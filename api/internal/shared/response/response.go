@@ -8,8 +8,14 @@ import (
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
+
+type FilterResponse[T any] struct {
+	Items      []T                   `json:"items"`
+	Pagination pagination.Pagination `json:"pagination"`
+}
 
 // WriteJSONError writes a JSON-encoded error response to the given http.ResponseWriter
 // using the provided *apperrors.APIError. It sets the appropriate HTTP status code
