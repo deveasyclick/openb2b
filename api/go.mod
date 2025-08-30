@@ -17,7 +17,8 @@ require (
 	github.com/swaggo/swag v1.16.6
 	go.uber.org/zap v1.27.0
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.25.10
+	gorm.io/driver/sqlite v1.6.0
+	gorm.io/gorm v1.30.0
 )
 
 require (
@@ -42,6 +43,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
