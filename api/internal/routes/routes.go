@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/deveasyclick/openb2b/docs"
-	"github.com/deveasyclick/openb2b/internal/middleware"
 	"github.com/deveasyclick/openb2b/internal/modules/clerk"
 	"github.com/deveasyclick/openb2b/internal/modules/org"
 	"github.com/deveasyclick/openb2b/internal/modules/product"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
 	"github.com/deveasyclick/openb2b/internal/modules/webhook"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
@@ -20,7 +20,7 @@ import (
 	swagger "github.com/swaggo/http-swagger"
 )
 
-func Register(r chi.Router, appCtx *deps.AppContext) {
+func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middleware) {
 	r.Use(chiMiddleware.RequestID) // Adds a unique request ID
 	r.Use(chiMiddleware.RealIP)    // Gets the real IP from X-Forwarded-For
 	r.Use(chiMiddleware.Logger)
@@ -72,7 +72,7 @@ func Register(r chi.Router, appCtx *deps.AppContext) {
 
 		// Private routes
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.AuthRequiredMiddleware())
+			r.Use(middleware.ValidateJWT())
 			registerOrgRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
 			registerProductRoutes(r, productHandler)

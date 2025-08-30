@@ -6,8 +6,17 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	clerkHttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
+	"github.com/deveasyclick/openb2b/internal/shared/response"
+	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
+
+type middleware struct{}
+
+func New() interfaces.Middleware {
+	return &middleware{}
+}
 
 func customClaimsConstructor(ctx context.Context) any {
 	return &identity.CustomSessionClaims{}
@@ -18,7 +27,7 @@ func withCustomClaimsConstructor(params *clerkHttp.AuthorizationParams) error {
 	return nil
 }
 
-// AuthRequiredMiddleware enforces Clerk authentication on protected routes.
+// ValidateJWT middleware enforces Clerk authentication on protected routes.
 //
 // This middleware:
 //  1. Wraps the Clerk `WithHeaderAuthorization` middleware to validate
@@ -38,7 +47,7 @@ func withCustomClaimsConstructor(params *clerkHttp.AuthorizationParams) error {
 //
 //	r := chi.NewRouter()
 //	r.Group(func(r chi.Router) {
-//	    r.Use(AuthRequiredMiddleware()) // Protect all routes in this group
+//	    r.Use(middleware.ValidateJWT()) // Protect all routes in this group
 //	    r.Get("/profile", profileHandler)
 //	})
 //
@@ -46,7 +55,7 @@ func withCustomClaimsConstructor(params *clerkHttp.AuthorizationParams) error {
 //   - Requests with a valid Clerk session in the `Authorization` header will
 //     continue to the next handler.
 //   - Requests without a valid session will be rejected with 401 Unauthorized.
-func AuthRequiredMiddleware(opts ...clerkHttp.AuthorizationOption) func(http.Handler) http.Handler {
+func (m *middleware) ValidateJWT(opts ...clerkHttp.AuthorizationOption) func(http.Handler) http.Handler {
 	// Extract custom claims from the request
 	opts = append(opts, withCustomClaimsConstructor)
 	return func(next http.Handler) http.Handler {
@@ -60,5 +69,23 @@ func AuthRequiredMiddleware(opts ...clerkHttp.AuthorizationOption) func(http.Han
 
 			next.ServeHTTP(w, r)
 		}))
+	}
+}
+
+func (m *middleware) Recover(logger interfaces.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if rec := recover(); rec != nil {
+					logger.Error("panic recovered", "error", rec)
+					response.WriteJSONError(w, &apperrors.APIError{
+						Code:    http.StatusInternalServerError,
+						Message: "Internal server error",
+					}, logger)
+				}
+			}()
+
+			next.ServeHTTP(w, r)
+		})
 	}
 }
