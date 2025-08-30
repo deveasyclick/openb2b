@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/deveasyclick/openb2b/internal/model"
+	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"gorm.io/gorm"
 )
@@ -48,15 +49,8 @@ func (r *repository) FindByID(ctx context.Context, ID uint) (*model.Product, err
 	return &product, nil
 }
 
-// TODO: implement pagination
-func (r *repository) Filter(ctx context.Context) ([]model.Product, error) {
-	var products []model.Product
-	err := r.db.WithContext(ctx).Find(&products).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return products, nil
+func (r *repository) Filter(ctx context.Context, opts pagination.Options) ([]model.Product, int64, error) {
+	return pagination.Paginate[model.Product](r.db, opts)
 }
 
 func (r *repository) FindOneWithFields(ctx context.Context, fields []string, where map[string]any, preloads []string) (*model.Product, error) {
