@@ -24,6 +24,303 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/orders": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of orders. Supports filtering, sorting, searching, and preloading.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "List orders with filtering and pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 20, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field, e.g. 'created_at desc'",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of relations to preload. relation must start with uppercase",
+                        "name": "preloads",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of fields to search (must be allowed)",
+                        "name": "search_fields",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by order number",
+                        "name": "order_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by notes",
+                        "name": "notes",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/order.APIResponseOrder"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid filter parameters",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Create orders",
+                "parameters": [
+                    {
+                        "description": "Order payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/order.CreateOrderDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/order.APIResponseOrder"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a order by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Get order",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/order.APIResponseOrder"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a order by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Delete order",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing order by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Update order",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update order payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/order.UpdateOrderDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/order.APIResponseOrder"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/orgs": {
             "post": {
                 "security": [
@@ -317,19 +614,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Product"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/product.APIResponseProduct"
                         }
                     },
                     "400": {
@@ -370,7 +655,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.createProductDTO"
+                            "$ref": "#/definitions/product.CreateProductDTO"
                         }
                     }
                 ],
@@ -378,19 +663,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Product"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/product.APIResponseProduct"
                         }
                     },
                     "400": {
@@ -442,19 +715,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Product"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/product.APIResponseProduct"
                         }
                     },
                     "400": {
@@ -558,7 +819,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.updateProductDTO"
+                            "$ref": "#/definitions/product.UpdateProductDTO"
                         }
                     }
                 ],
@@ -566,19 +827,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Product"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/product.APIResponseProduct"
                         }
                     },
                     "400": {
@@ -631,19 +880,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Variant"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/product.APIResponseVariant"
                         }
                     },
                     "400": {
@@ -756,7 +993,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.createVariantDTO"
+                            "$ref": "#/definitions/product.CreateVariantDTO"
                         }
                     }
                 ],
@@ -764,19 +1001,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Variant"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/product.APIResponseVariant"
                         }
                     },
                     "400": {
@@ -839,7 +1064,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.updateVariantDTO"
+                            "$ref": "#/definitions/product.UpdateVariantDTO"
                         }
                     }
                 ],
@@ -847,7 +1072,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Variant"
+                            "$ref": "#/definitions/product.APIResponseVariant"
                         }
                     },
                     "400": {
@@ -1076,21 +1301,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Address"
                 },
                 "at": {
                     "type": "string"
                 },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
                 "date": {
-                    "type": "string"
-                },
-                "state": {
                     "type": "string"
                 },
                 "status": {
@@ -1141,11 +1357,11 @@ const docTemplate = `{
         "model.Order": {
             "type": "object",
             "properties": {
-                "createdBy": {
-                    "$ref": "#/definitions/model.User"
-                },
                 "created_at": {
                     "type": "string"
+                },
+                "customer": {
+                    "$ref": "#/definitions/model.Customer"
                 },
                 "customerId": {
                     "type": "integer"
@@ -1156,20 +1372,20 @@ const docTemplate = `{
                 "discount": {
                     "$ref": "#/definitions/model.DiscountInfo"
                 },
-                "distributorId": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "integer"
                 },
-                "notes": {
-                    "type": "string"
-                },
-                "orderItems": {
+                "items": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.OrderItem"
                     }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "orderNumber": {
+                    "type": "string"
                 },
                 "org": {
                     "$ref": "#/definitions/model.Org"
@@ -1177,11 +1393,14 @@ const docTemplate = `{
                 "orgId": {
                     "type": "integer"
                 },
-                "requestedFor": {
-                    "$ref": "#/definitions/model.Customer"
-                },
                 "status": {
                     "$ref": "#/definitions/model.OrderStatus"
+                },
+                "tax": {
+                    "type": "number"
+                },
+                "total": {
+                    "type": "number"
                 },
                 "updated_at": {
                     "type": "string"
@@ -1197,14 +1416,11 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "order": {
-                    "$ref": "#/definitions/model.Order"
-                },
                 "orderId": {
                     "type": "integer"
                 },
-                "price": {
-                    "type": "number"
+                "orgId": {
+                    "type": "integer"
                 },
                 "product": {
                     "$ref": "#/definitions/model.Product"
@@ -1215,8 +1431,20 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
+                "total": {
+                    "type": "number"
+                },
+                "unitPrice": {
+                    "type": "number"
+                },
                 "updated_at": {
                     "type": "string"
+                },
+                "variant": {
+                    "$ref": "#/definitions/model.Variant"
+                },
+                "variantId": {
+                    "type": "integer"
                 }
             }
         },
@@ -1455,6 +1683,142 @@ const docTemplate = `{
                 }
             }
         },
+        "order.APIResponseOrder": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.Order"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "order.CreateDeliveryInfoDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "transportFare"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "transportFare": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "order.CreateDiscountInfoDTO": {
+            "type": "object",
+            "required": [
+                "amount",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "type": {
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DiscountType"
+                        }
+                    ]
+                }
+            }
+        },
+        "order.CreateOrderDTO": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "delivery",
+                "items"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "integer"
+                },
+                "delivery": {
+                    "$ref": "#/definitions/order.CreateDeliveryInfoDTO"
+                },
+                "discount": {
+                    "$ref": "#/definitions/order.CreateDiscountInfoDTO"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/order.CreateOrderItemDTO"
+                    }
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "tax": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "order.CreateOrderItemDTO": {
+            "type": "object",
+            "required": [
+                "quantity",
+                "unitPrice",
+                "variantId"
+            ],
+            "properties": {
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "unitPrice": {
+                    "type": "number"
+                },
+                "variantId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "order.UpdateOrderDTO": {
+            "type": "object",
+            "properties": {
+                "discount": {
+                    "$ref": "#/definitions/order.CreateDiscountInfoDTO"
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "status": {
+                    "enum": [
+                        "pending",
+                        "approved",
+                        "delivered",
+                        "cancelled"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.OrderStatus"
+                        }
+                    ]
+                },
+                "tax": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
         "org.Address": {
             "description": "Address",
             "type": "object",
@@ -1639,7 +2003,35 @@ const docTemplate = `{
                 }
             }
         },
-        "product.createProductDTO": {
+        "product.APIResponseProduct": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.Product"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "product.APIResponseVariant": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.Variant"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "product.CreateProductDTO": {
             "type": "object",
             "required": [
                 "name",
@@ -1667,12 +2059,12 @@ const docTemplate = `{
                 "variants": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/product.createProductVariantDTO"
+                        "$ref": "#/definitions/product.CreateProductVariantDTO"
                     }
                 }
             }
         },
-        "product.createProductVariantDTO": {
+        "product.CreateProductVariantDTO": {
             "type": "object",
             "required": [
                 "price",
@@ -1704,7 +2096,7 @@ const docTemplate = `{
                 }
             }
         },
-        "product.createVariantDTO": {
+        "product.CreateVariantDTO": {
             "type": "object",
             "required": [
                 "price",
@@ -1736,7 +2128,7 @@ const docTemplate = `{
                 }
             }
         },
-        "product.updateProductDTO": {
+        "product.UpdateProductDTO": {
             "type": "object",
             "properties": {
                 "category": {
@@ -1759,7 +2151,7 @@ const docTemplate = `{
                 }
             }
         },
-        "product.updateVariantDTO": {
+        "product.UpdateVariantDTO": {
             "type": "object",
             "properties": {
                 "color": {
@@ -1778,20 +2170,6 @@ const docTemplate = `{
                 "stock": {
                     "type": "integer",
                     "minimum": 0
-                }
-            }
-        },
-        "response.APIResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer",
-                    "example": 200
-                },
-                "data": {},
-                "message": {
-                    "type": "string",
-                    "example": "success"
                 }
             }
         },
