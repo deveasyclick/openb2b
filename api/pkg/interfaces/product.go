@@ -10,8 +10,8 @@ import (
 )
 
 type ProductService interface {
-	Create(ctx context.Context, org *model.Product) error
-	Update(ctx context.Context, org *model.Product) error
+	Create(ctx context.Context, product *model.Product) error
+	Update(ctx context.Context, product *model.Product) error
 	Delete(ctx context.Context, ID uint) error
 	FindByID(ctx context.Context, ID uint) (*model.Product, error)
 	Exists(ctx context.Context, where map[string]any) (bool, error)
