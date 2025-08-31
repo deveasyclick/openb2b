@@ -7,6 +7,7 @@ import (
 
 	"github.com/deveasyclick/openb2b/docs"
 	"github.com/deveasyclick/openb2b/internal/modules/clerk"
+	"github.com/deveasyclick/openb2b/internal/modules/order"
 	"github.com/deveasyclick/openb2b/internal/modules/org"
 	"github.com/deveasyclick/openb2b/internal/modules/product"
 	"github.com/deveasyclick/openb2b/internal/modules/user"
@@ -62,6 +63,11 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 	productService := product.NewService(productRepository)
 	productHandler := product.NewHandler(productService, appCtx)
 
+	// Order
+	orderRepository := order.NewRepository(appCtx.DB)
+	orderService := order.NewService(orderRepository)
+	orderHandler := order.NewHandler(orderService, appCtx)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
 
@@ -76,6 +82,7 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 			registerOrgRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
 			registerProductRoutes(r, productHandler)
+			registerOrderRoutes(r, orderHandler)
 		})
 	})
 
