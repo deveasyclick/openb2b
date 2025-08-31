@@ -22,6 +22,8 @@ func SetupTestDB() *gorm.DB {
 		&model.Product{},
 		&model.Variant{},
 		&model.Customer{},
+		&model.Order{},
+		&model.OrderItem{},
 	)
 
 	if err != nil {
