@@ -51,8 +51,8 @@ type Order struct {
 	BaseModel
 
 	OrderNumber string       `gorm:"uniqueIndex;size:50" json:"orderNumber"`
-	CustomerID  uint         `gorm:"index" json:"customerId"`
-	Customer    *Customer    `gorm:"foreignKey:CustomerID" json:"requestedFor"`
+	CustomerID  uint         `gorm:"index;not null" json:"customerId"`
+	Customer    *Customer    `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 	Status      OrderStatus  `gorm:"type:varchar(20);default:'pending';check:status IN ('pending','processing','shipped','completed')" json:"status"`
 	OrgID       uint         `gorm:"index" json:"orgId"`
 	Org         *Org         `gorm:"foreignKey:OrgID" json:"org"`
