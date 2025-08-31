@@ -26,10 +26,7 @@ const (
 )
 
 type DeliveryInfo struct {
-	Address       string         `gorm:"not null" json:"address"`
-	City          string         `gorm:"not null;type:varchar(100)" json:"city"`
-	State         string         `gorm:"not null;type:varchar(100)" json:"state"`
-	Country       string         `gorm:"not null;type:varchar(100)" json:"country"`
+	Address       *Address       `gorm:"embedded;embeddedPrefix:address_" json:"address"`
 	TransportFare float64        `gorm:"not null" json:"transportFare"`
 	Status        DeliveryStatus `gorm:"type:varchar(20)" json:"status"`
 	Date          *time.Time     `json:"date"`
@@ -52,15 +49,17 @@ func (o *Order) BeforeSave(tx *gorm.DB) (err error) {
 // Add customer instead of collecting customer name and phone number to prevent redundancy, preserve customer order history and stats
 type Order struct {
 	BaseModel
-	DistributorID uint         `gorm:"index" json:"distributorId"`
-	CreatedBy     *User        `gorm:"foreignKey:DistributorID" json:"createdBy"`
-	CustomerID    uint         `gorm:"index" json:"customerId"`
-	Customer      *Customer    `gorm:"foreignKey:CustomerID" json:"requestedFor"`
-	Status        OrderStatus  `gorm:"type:varchar(20);default:'pending';check:status IN ('pending','processing','shipped','completed')" json:"status"`
-	OrgID         uint         `gorm:"index" json:"orgId"`
-	Org           *Org         `gorm:"foreignKey:OrgID" json:"org"`
-	OrderItems    []OrderItem  `gorm:"foreignKey:OrderID" json:"orderItems"`
-	Delivery      DeliveryInfo `gorm:"embedded;embeddedPrefix:delivery_" json:"delivery"`
-	Notes         string       `json:"notes"`
-	Discount      DiscountInfo `gorm:"embedded;embeddedPrefix:discount_" json:"discount"`
+
+	OrderNumber string       `gorm:"uniqueIndex;size:50" json:"orderNumber"`
+	CustomerID  uint         `gorm:"index" json:"customerId"`
+	Customer    *Customer    `gorm:"foreignKey:CustomerID" json:"requestedFor"`
+	Status      OrderStatus  `gorm:"type:varchar(20);default:'pending';check:status IN ('pending','processing','shipped','completed')" json:"status"`
+	OrgID       uint         `gorm:"index" json:"orgId"`
+	Org         *Org         `gorm:"foreignKey:OrgID" json:"org"`
+	Items       []OrderItem  `gorm:"foreignKey:OrderID" json:"items"`
+	Delivery    DeliveryInfo `gorm:"embedded;embeddedPrefix:delivery_" json:"delivery"`
+	Notes       string       `json:"notes"`
+	Discount    DiscountInfo `gorm:"embedded;embeddedPrefix:discount_" json:"discount"`
+	Total       float64      `json:"total"`
+	Tax         float64      `json:"tax"`
 }
