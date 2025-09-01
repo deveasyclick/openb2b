@@ -11,6 +11,10 @@ import (
 var TestDB *gorm.DB
 
 func SetupTestDB() *gorm.DB {
+	if TestDB != nil {
+		return TestDB
+	}
+
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect test db: %v", err)
