@@ -2,6 +2,7 @@ package order
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -143,6 +144,13 @@ func (h *OrderHandler) Update(w http.ResponseWriter, r *http.Request) {
 	existingOrder, err := h.service.FindByID(ctx, uint(id))
 	if err != nil {
 		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateOrder, h.appCtx.Logger)
+		return
+	}
+
+	// Don't update order if it is not in pending status
+	if existingOrder.Status != model.OrderStatusPending {
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, fmt.Sprintf("cannot update %s: %s", apperrors.ErrOrderNotPending, existingOrder.Status), h.appCtx.Logger)
+
 		return
 	}
 

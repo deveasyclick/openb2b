@@ -56,4 +56,5 @@ const (
 	ErrFindOrder          = "error finding order"
 	ErrOrderNotFound      = "order not found"
 	ErrFilterOrder        = "error filtering orders"
+	ErrOrderNotPending    = "order not in pending"
 )
