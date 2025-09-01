@@ -12,23 +12,21 @@ import (
 
 type CreateOrderItemDTO struct {
 	VariantID uint    `json:"variantId" validate:"required"`
+	ProductID uint    `json:"productId" validate:"required"`
 	Quantity  int     `json:"quantity" validate:"required,min=1"`
 	UnitPrice float64 `json:"unitPrice" validate:"required,gt=0"`
 }
 
-func (i *CreateOrderItemDTO) ToModel(orgID uint, productID *uint) model.OrderItem {
+func (i *CreateOrderItemDTO) ToModel(orgID uint) model.OrderItem {
 	item := model.OrderItem{
 		VariantID: i.VariantID,
 		Quantity:  i.Quantity,
 		UnitPrice: i.UnitPrice,
 		Total:     float64(i.Quantity) * i.UnitPrice,
 		OrgID:     orgID,
+		ProductID: i.ProductID,
 	}
 
-	// productId is not available when creating an order
-	if productID != nil {
-		item.ProductID = *productID
-	}
 	return item
 }
 
@@ -76,18 +74,12 @@ func (dto *CreateOrderDTO) ToModel(orgID uint) model.Order {
 		Tax:         dto.Tax,
 		Status:      model.OrderStatusPending,
 	}
-
-	// map items
+	// Map items
 	for _, item := range dto.Items {
-		order.Items = append(order.Items, item.ToModel(orgID, nil))
+		order.Items = append(order.Items, item.ToModel(orgID))
 	}
 
-	// calculate total
-	total := 0.0
-	for _, i := range order.Items {
-		total += i.Total
-	}
-	order.Total = total
+	calculateTotals(&order)
 
 	return order
 }
@@ -101,6 +93,8 @@ type UpdateOrderDTO struct {
 	Notes    *string                `json:"notes" validate:"omitempty,max=1000"`
 	Discount *CreateDiscountInfoDTO `json:"discount" validate:"omitempty"`
 	Tax      *float64               `json:"tax" validate:"omitempty,min=0"`
+	Items    []*CreateOrderItemDTO  `json:"items" validate:"omitempty,dive"`
+	Delivery *UpdateDeliveryInfoDTO `json:"deliver" validate:"omitempty"`
 }
 
 func (dto *UpdateOrderDTO) ApplyModel(order *model.Order) {
@@ -116,6 +110,20 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order) {
 	if dto.Tax != nil {
 		order.Tax = *dto.Tax
 	}
+
+	if dto.Delivery != nil {
+		dto.Delivery.ApplyModel(&order.Delivery)
+	}
+
+	if dto.Items != nil {
+		var updatedItems []model.OrderItem
+		for _, updatedItem := range dto.Items {
+			updatedItems = append(order.Items, updatedItem.ToModel(order.OrgID))
+		}
+		order.Items = updatedItems
+	}
+
+	calculateTotals(order)
 }
 
 type UpdateDeliveryInfoDTO struct {
@@ -153,4 +161,36 @@ func (dto *UpdateOrderItemDTO) ApplyModel(item *model.OrderItem) {
 		item.UnitPrice = *dto.UnitPrice
 	}
 	item.Total = float64(item.Quantity) * item.UnitPrice
+}
+
+// Calculate totals
+func calculateTotals(order *model.Order) {
+	// Calculate subtotal
+	subtotal := 0.0
+	for _, item := range order.Items {
+		subtotal += item.Total
+	}
+	order.Subtotal = subtotal
+
+	// Calculate discount
+	discountAmount := 0.0
+	discount := order.Discount
+	if discount.Type == "percentage" {
+		discountAmount = subtotal * (discount.Amount / 100)
+	} else if discount.Type == "fixed" {
+		discountAmount = discount.Amount
+	}
+	order.DiscountAmount = discountAmount
+
+	// Calculate tax
+	taxAmount := 0.0
+	if order.Tax > 0 {
+		taxAmount = (subtotal - discountAmount) * (order.Tax / 100)
+	}
+
+	// Final total
+	order.Total = subtotal - discountAmount + taxAmount
+	if order.Total < 0 {
+		order.Total = 0
+	}
 }
