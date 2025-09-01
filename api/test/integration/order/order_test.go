@@ -3,6 +3,7 @@ package order_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -20,13 +21,13 @@ func TestOrderHandlers(t *testing.T) {
 
 	db := setup.SetupTestDB()
 	seed.Clear(db) // reset DB for controlled testing
-
+	Insert(db)
 	// -------------------- CREATE ORDER --------------------
 	t.Run("Create order - success", func(t *testing.T) {
 		reqBody := order.CreateOrderDTO{
 			CustomerID: 1,
 			Items: []order.CreateOrderItemDTO{
-				{VariantID: 1, Quantity: 1, UnitPrice: 10.0},
+				{VariantID: 1, Quantity: 1, UnitPrice: 10.0, ProductID: 1},
 			},
 			Delivery: order.CreateDeliveryInfoDTO{
 				Address:       &model.Address{Address: "Street 1", City: "City 1", State: "State 1", Country: "Country 1"},
@@ -43,14 +44,15 @@ func TestOrderHandlers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
+		assert.NoError(t, err)
 		defer resp.Body.Close()
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
 		var order response.APIResponse[model.Order]
 		err = json.NewDecoder(resp.Body).Decode(&order)
 		if err != nil {
 			t.Fatal(err)
 		}
-
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, order.Code)
 		assert.Equal(t, order.Message, "success")
@@ -103,13 +105,15 @@ func TestOrderHandlers(t *testing.T) {
 
 	// -------------------- UPDATE PRODUCT --------------------
 	t.Run("Update order - success", func(t *testing.T) {
-		reqBody := map[string]any{"name": "Updated Order"}
+		reqBody := map[string]any{"Notes": "This is a note"}
 		body, _ := json.Marshal(reqBody)
 		req, _ := http.NewRequest(http.MethodPatch, ts.URL+"/api/v1/orders/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
+		defer resp.Body.Close()
+
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
@@ -122,6 +126,25 @@ func TestOrderHandlers(t *testing.T) {
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("Update order - not in pending status (400)", func(t *testing.T) {
+		reqBody := map[string]any{"Notes": "Updated Note"}
+		body, _ := json.Marshal(reqBody)
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/api/v1/orders/%d", ts.URL, nonPendingOrderId), bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		assert.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+		var order response.APIResponse[model.Order]
+		err = json.NewDecoder(resp.Body).Decode(&order)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, order.Code)
+		assert.Equal(t, "cannot update order not in pending: processing", order.Message)
 	})
 
 	// -------------------- DELETE PRODUCT --------------------
