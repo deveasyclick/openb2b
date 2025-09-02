@@ -24,6 +24,321 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/customers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of customers. Supports filtering, sorting, searching, and preloading.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "List customers with filtering and pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 20, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field, e.g. 'created_at desc'",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of relations to preload. relation must start with uppercase. e.g. 'Orders,Org'",
+                        "name": "preloads",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of fields to search (must be allowed)",
+                        "name": "search_fields",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by first name",
+                        "name": "first_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by last name",
+                        "name": "last_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by phone number",
+                        "name": "phone_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by email",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by company",
+                        "name": "company",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.APIResponseCustomer"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid filter parameters",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Create customers",
+                "parameters": [
+                    {
+                        "description": "Customer payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateCustomerDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.APIResponseCustomer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a customer by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Get customer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.APIResponseCustomer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a customer by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Delete customer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing customer by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Update customer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update customer payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateCustomerDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.APIResponseCustomer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/orders": {
             "get": {
                 "security": [
@@ -1218,6 +1533,20 @@ const docTemplate = `{
                 }
             }
         },
+        "customer.APIResponseCustomer": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.Customer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AddressOptional": {
             "type": "object",
             "properties": {
@@ -1306,6 +1635,36 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateCustomerDTO": {
+            "type": "object",
+            "required": [
+                "firstName",
+                "lastName",
+                "phoneNumber"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/dto.AddressOptional"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateDeliveryInfoDTO": {
             "type": "object",
             "required": [
@@ -1313,7 +1672,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/model.Address"
+                    "$ref": "#/definitions/dto.AddressRequired"
                 },
                 "transportFare": {
                     "type": "number",
@@ -1541,6 +1900,30 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateCustomerDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/dto.AddressOptional"
+                },
+                "company": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
         "dto.UpdateDeliveryInfoDTO": {
             "type": "object",
             "properties": {
@@ -1733,15 +2116,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "address": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Address"
                 },
                 "company": {
-                    "type": "string"
-                },
-                "country": {
                     "type": "string"
                 },
                 "created_at": {
@@ -1774,9 +2151,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "phoneNumber": {
-                    "type": "string"
-                },
-                "state": {
                     "type": "string"
                 },
                 "updated_at": {
