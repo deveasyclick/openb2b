@@ -69,13 +69,7 @@ func (dto *CreateOrgDTO) ToModel() *model.Org {
 		OrganizationUrl:  dto.OrganizationUrl,
 		Email:            dto.Email,
 		Phone:            dto.Phone,
-		Address: &model.Address{
-			City:    dto.Address.City,
-			State:   dto.Address.State,
-			Zip:     dto.Address.Zip,
-			Country: dto.Address.Country,
-			Address: dto.Address.Address,
-		},
+		Address:          dto.Address.ToModel(),
 	}
 }
 
@@ -96,19 +90,5 @@ func (dto *UpdateOrgDTO) ApplyModel(org *model.Org) {
 	if dto.Phone != "" {
 		org.Phone = dto.Phone
 	}
-	if dto.Address.State != "" {
-		org.Address.State = dto.Address.State
-	}
-	if dto.Address.Address != "" {
-		org.Address.Address = dto.Address.Address
-	}
-	if dto.Address.City != "" {
-		org.Address.City = dto.Address.City
-	}
-	if dto.Address.Country != "" {
-		org.Address.Country = dto.Address.Country
-	}
-	if dto.Address.Zip != "" {
-		org.Address.Country = dto.Address.Zip
-	}
+	dto.Address.ApplyModel(org.Address)
 }
