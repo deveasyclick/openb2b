@@ -140,7 +140,7 @@ func (h *OrderHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get existing order
-	existingOrder, err := h.service.FindByID(ctx, uint(id))
+	existingOrder, err := h.service.FindOneWithFields(ctx, nil, map[string]any{"id": id}, []string{"Items"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrOrderNotFound, h.appCtx.Logger)
