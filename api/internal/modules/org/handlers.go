@@ -8,6 +8,7 @@ import (
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	"github.com/deveasyclick/openb2b/internal/shared/dto"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
@@ -32,7 +33,7 @@ func NewHandler(service interfaces.OrgService, createOrgUC interfaces.CreateOrgU
 // @Tags organizations
 // @Accept json
 // @Produce json
-// @Param request body createDTO true "Organization payload"
+// @Param request body dto.CreateOrgDTO true "Organization payload"
 // @Success 200 {object} model.Org
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
@@ -40,7 +41,7 @@ func NewHandler(service interfaces.OrgService, createOrgUC interfaces.CreateOrgU
 // @Security BearerAuth
 func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req createDTO
+	var req dto.CreateOrgDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		h.appCtx.Logger.Error("invalid request body in org create", "errors", errors)
 		validator.WriteValidationResponse(w, errors)
@@ -99,7 +100,7 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Organization ID"
-// @Param request body updateDTO true "Update organization payload"
+// @Param request body dto.UpdateOrgDTO true "Update organization payload"
 // @Success 200 {object} model.Org
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
@@ -114,7 +115,7 @@ func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req updateDTO
+	var req dto.UpdateOrgDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return

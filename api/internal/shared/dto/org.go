@@ -1,36 +1,12 @@
-package org
+package dto
 
 import (
 	"github.com/deveasyclick/openb2b/internal/model"
 )
 
-// Address represents the address of the organization
-// @Description Address
-type Address struct {
-	// State where the organization is located
-	// Required: true
-	State string `json:"state" validate:"required,min=2,max=30" example:"California"`
-
-	// City where the organization is located
-	// Required: true
-	City string `json:"city" validate:"required,min=2,max=30" example:"San Francisco"`
-
-	// Address of the organization
-	// Required: true
-	Address string `json:"address" validate:"required,min=5,max=100" example:"123 Market Street"`
-
-	// Country where the organization is registered
-	// Required: true
-	Country string `json:"country" validate:"required,min=2,max=100" example:"USA"`
-
-	// Zip where the organization is located
-	// Required: true
-	Zip string `json:"zip" validate:"required,min=2,max=30" example:"02912"`
-}
-
-// createDTO represents the payload for creating a new organization
+// CreateOrgDTO represents the payload for creating a new organization
 // @Description Organization creation request
-type createDTO struct {
+type CreateOrgDTO struct {
 	// Name of the organization (short name / brand)
 	// Required: true
 	// Min length: 3
@@ -57,20 +33,12 @@ type createDTO struct {
 	// Required: true
 	Phone string `json:"phone" validate:"required,min=10,max=50" example:"+1-202-555-0199"`
 
-	Address Address `json:"address"`
+	Address AddressRequired `json:"address"`
 }
 
-type UpdateAddressDTO struct {
-	State   string `json:"state" validate:"omitempty,min=2,max=30" example:"California"`
-	City    string `json:"city" validate:"omitempty,min=2,max=30" example:"San Francisco"`
-	Address string `json:"address" validate:"omitempty,min=5,max=100" example:"123 Market Street"`
-	Country string `json:"country" validate:"omitempty,min=2,max=100" example:"USA"`
-	Zip     string `json:"zip" validate:"omitempty,min=2,max=30" example:"02912"`
-}
-
-// updateDTO represents the payload for updating an organization
+// UpdateOrgDTO represents the payload for updating an organization
 // @Description Organization update request
-type updateDTO struct {
+type UpdateOrgDTO struct {
 	// Name of the organization
 	Name string `json:"name" validate:"omitempty,min=3,max=50" example:"OpenB2B"`
 
@@ -90,10 +58,10 @@ type updateDTO struct {
 	Phone string `json:"phone" validate:"omitempty,min=10,max=50" example:"+1-202-555-0199"`
 
 	// Address of the organization
-	Address UpdateAddressDTO `json:"address"`
+	Address AddressOptional `json:"address"`
 }
 
-func (dto *createDTO) ToModel() *model.Org {
+func (dto *CreateOrgDTO) ToModel() *model.Org {
 	return &model.Org{
 		Name:             dto.Name,
 		Logo:             dto.Logo,
@@ -111,7 +79,7 @@ func (dto *createDTO) ToModel() *model.Org {
 	}
 }
 
-func (dto *updateDTO) ApplyModel(org *model.Org) {
+func (dto *UpdateOrgDTO) ApplyModel(org *model.Org) {
 	if dto.Name != "" {
 		org.Name = dto.Name
 	}

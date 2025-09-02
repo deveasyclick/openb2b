@@ -1,4 +1,4 @@
-package product
+package dto
 
 import "github.com/deveasyclick/openb2b/internal/model"
 

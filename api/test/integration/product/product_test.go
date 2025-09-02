@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/deveasyclick/openb2b/internal/modules/product"
+	"github.com/deveasyclick/openb2b/internal/shared/dto"
 	"github.com/deveasyclick/openb2b/test/integration/setup"
 	"github.com/deveasyclick/openb2b/test/integration/setup/seed"
 	"github.com/stretchr/testify/assert"
@@ -21,9 +21,9 @@ func TestProductHandlers(t *testing.T) {
 
 	// -------------------- CREATE PRODUCT --------------------
 	t.Run("Create product - success", func(t *testing.T) {
-		reqBody := product.CreateProductDTO{
+		reqBody := dto.CreateProductDTO{
 			Name: "New Product",
-			Variants: []product.CreateProductVariantDTO{
+			Variants: []dto.CreateProductVariantDTO{
 				{SKU: "SKU1", Price: 10.5, Stock: 5},
 			},
 		}
@@ -34,8 +34,8 @@ func TestProductHandlers(t *testing.T) {
 	})
 
 	t.Run("Create product - missing name (400)", func(t *testing.T) {
-		reqBody := product.CreateProductDTO{
-			Variants: []product.CreateProductVariantDTO{
+		reqBody := dto.CreateProductDTO{
+			Variants: []dto.CreateProductVariantDTO{
 				{SKU: "SKU2", Price: 12, Stock: 3},
 			},
 		}
@@ -46,9 +46,9 @@ func TestProductHandlers(t *testing.T) {
 	})
 
 	t.Run("Create product - duplicate name (409)", func(t *testing.T) {
-		reqBody := product.CreateProductDTO{
+		reqBody := dto.CreateProductDTO{
 			Name: "Duplicate Product",
-			Variants: []product.CreateProductVariantDTO{
+			Variants: []dto.CreateProductVariantDTO{
 				{SKU: "SKU3", Price: 15, Stock: 2},
 			},
 		}
