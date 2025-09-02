@@ -1,4 +1,4 @@
-package order_test
+package seed
 
 import (
 	"log"
@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var nonPendingOrderId uint
+var NonPendingOrderId uint
 
-func Insert(db *gorm.DB) {
+func InsertOrders(db *gorm.DB) {
 	db.Create(&model.Order{
 		Notes:       "Notes",
 		OrderNumber: "ORD-123",
@@ -19,11 +19,11 @@ func Insert(db *gorm.DB) {
 	if err != nil {
 		log.Fatalf("failed to create order: %v", err)
 	}
-	nonPendingOrderId = nonPendingOrder.ID
+	NonPendingOrderId = nonPendingOrder.ID
 }
 
 // Clear deletes all products and their variants in the database.
-func Clear(db *gorm.DB) {
+func ClearOrders(db *gorm.DB) {
 	// Delete variants first (foreign key dependency)
 	if err := db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Order{}).Error; err != nil {
 		log.Fatalf("failed to clear orders: %v", err)
