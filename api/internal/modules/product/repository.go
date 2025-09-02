@@ -126,3 +126,20 @@ func (r *repository) CheckVariantExistsBySKU(ctx context.Context, sku string) (b
 func (r *repository) WithTx(tx *gorm.DB) interfaces.ProductRepository {
 	return &repository{db: tx}
 }
+
+func (r *repository) FindVariants(ctx context.Context, where map[string]any, preloads []string) ([]model.Variant, error) {
+	var result []model.Variant
+	query := r.db.WithContext(ctx).Model(model.Variant{})
+	if where != nil {
+		query = query.Where(where)
+	}
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+	err := query.Find(&result).Error
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}

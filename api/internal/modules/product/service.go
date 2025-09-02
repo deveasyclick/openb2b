@@ -76,3 +76,7 @@ func (s *service) CheckVariantExists(ctx context.Context, sku string) (bool, err
 func (s *service) WithTx(tx *gorm.DB) interfaces.ProductService {
 	return &service{repo: s.repo.WithTx(tx)}
 }
+
+func (s *service) FindVariants(ctx context.Context, where map[string]any, preloads []string) ([]model.Variant, error) {
+	return s.repo.FindVariants(ctx, where, preloads)
+}

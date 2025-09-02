@@ -25,6 +25,7 @@ type ProductService interface {
 	DeleteVariant(ctx context.Context, productID uint, variantID uint) error
 	FindVariantByID(ctx context.Context, productID uint, variantID uint) (*model.Variant, error)
 	CheckVariantExists(ctx context.Context, sku string) (bool, error)
+	FindVariants(ctx context.Context, where map[string]any, preloads []string) ([]model.Variant, error)
 }
 
 type ProductRepository interface {
@@ -42,6 +43,7 @@ type ProductRepository interface {
 	DeleteVariant(ctx context.Context, variantID uint, productID uint) error
 	FindVariantByID(ctx context.Context, variantID uint, productID uint) (*model.Variant, error)
 	CheckVariantExistsBySKU(ctx context.Context, sku string) (bool, error)
+	FindVariants(ctx context.Context, where map[string]any, preloads []string) ([]model.Variant, error)
 }
 
 type ProductHandler interface {
