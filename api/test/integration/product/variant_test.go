@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/deveasyclick/openb2b/test/integration/seed"
 	"github.com/deveasyclick/openb2b/test/integration/setup"
-	"github.com/deveasyclick/openb2b/test/integration/setup/seed"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,13 +17,13 @@ func TestProductVariantHandlers(t *testing.T) {
 	defer ts.Close()
 
 	db := setup.SetupTestDB()
-	seed.Insert(db) // seed initial product(s)
+	seed.InsertProducts(db) // seed initial product(s)
 
 	productID := 1 // assume the first seeded product has ID 1
 
 	t.Run("Create variant success", func(t *testing.T) {
 		reqBody := map[string]any{
-			"sku":   "SKU-001",
+			"sku":   "SKU-003",
 			"color": "Red",
 			"size":  "M",
 			"price": 19.99,
@@ -35,9 +35,9 @@ func TestProductVariantHandlers(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 	})
 
-	t.Run("Create variant duplicate SKU", func(t *testing.T) {
+	t.Run("Create variant duplicate SKU (409)", func(t *testing.T) {
 		reqBody := map[string]any{
-			"sku":   "SKU-001",
+			"sku":   "SKU-003",
 			"color": "Blue",
 			"size":  "L",
 			"price": 29.99,

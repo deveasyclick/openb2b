@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/deveasyclick/openb2b/internal/shared/dto"
+	"github.com/deveasyclick/openb2b/test/integration/seed"
 	"github.com/deveasyclick/openb2b/test/integration/setup"
-	"github.com/deveasyclick/openb2b/test/integration/setup/seed"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +17,7 @@ func TestProductHandlers(t *testing.T) {
 	defer ts.Close()
 
 	db := setup.SetupTestDB()
-	seed.Clear(db) // reset DB for controlled testing
+	seed.ClearProducts(db) // reset DB for controlled testing
 
 	// -------------------- CREATE PRODUCT --------------------
 	t.Run("Create product - success", func(t *testing.T) {
