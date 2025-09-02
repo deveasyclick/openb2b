@@ -176,24 +176,24 @@ func calculateTotals(order *model.Order) {
 	order.Subtotal = subtotal
 
 	// Calculate discount
-	discountAmount := 0.0
+	appliedDiscount := 0.0
 	discount := order.Discount
 	if discount.Type == "percentage" {
-		discountAmount = subtotal * (discount.Amount / 100)
+		appliedDiscount = subtotal * (discount.Amount / 100)
 	} else if discount.Type == "fixed" {
-		discountAmount = discount.Amount
+		appliedDiscount = discount.Amount
 	}
-	order.DiscountAmount = discountAmount
+	order.AppliedDiscount = appliedDiscount
 
 	// Calculate tax
 	taxAmount := 0.0
 	if order.Tax > 0 {
-		taxAmount = (subtotal - discountAmount) * (order.Tax / 100)
+		taxAmount = (subtotal - appliedDiscount) * (order.Tax / 100)
 	}
 	order.TaxAmount = taxAmount
 
 	// Final total
-	order.Total = subtotal - discountAmount + taxAmount
+	order.Total = subtotal - appliedDiscount + taxAmount
 	if order.Total < 0 {
 		order.Total = 0
 	}
