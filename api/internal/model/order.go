@@ -64,4 +64,5 @@ type Order struct {
 	Tax            float64      `json:"tax"`            // Tax percentage
 	Subtotal       float64      `json:"subtotal"`       // Sum of all item totals before discount and tax
 	DiscountAmount float64      `json:"discountAmount"` // Actual discount applied
+	TaxAmount      float64      `json:"taxAmount"`      // Tax amount
 }
