@@ -65,7 +65,7 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 
 	// Order
 	orderRepository := order.NewRepository(appCtx.DB)
-	orderService := order.NewService(orderRepository)
+	orderService := order.NewService(orderRepository, productService)
 	orderHandler := order.NewHandler(orderService, appCtx)
 
 	r.Route("/api/v1", func(r chi.Router) {
