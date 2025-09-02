@@ -11,6 +11,7 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/oklog/ulid/v2 v2.1.1
 	github.com/stretchr/testify v1.11.0
 	github.com/svix/svix-webhooks v1.74.1
 	github.com/swaggo/http-swagger v1.3.4

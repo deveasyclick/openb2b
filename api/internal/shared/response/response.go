@@ -55,15 +55,22 @@ func WriteJSONErrorV2(w http.ResponseWriter, code int, internalError error, msg 
 }
 
 // APIResponse is a standard success response wrapper
-type APIResponse struct {
+type APIResponse[T any] struct {
 	Code    int    `json:"code" example:"200"`
 	Message string `json:"message" example:"success"`
-	Data    any    `json:"data,omitempty"`
+	Data    T      `json:"data,omitempty"`
+}
+
+// For Swagger docs
+type APIResponseInt struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    int    `json:"data"`
 }
 
 // WriteJSONSuccess writes a structured success response
-func WriteJSONSuccess(w http.ResponseWriter, statusCode int, data any, logger interfaces.Logger) {
-	resp := APIResponse{
+func WriteJSONSuccess[T any](w http.ResponseWriter, statusCode int, data T, logger interfaces.Logger) {
+	resp := APIResponse[T]{
 		Code:    statusCode,
 		Message: "success",
 		Data:    data,

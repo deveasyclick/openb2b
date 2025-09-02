@@ -20,6 +20,18 @@ import (
 
 var allowedProductSearchFields = map[string]bool{"name": true, "last_name": true, "phone_number": true, "email": true}
 
+// For Swagger docs
+type APIResponseProduct struct {
+	Code    int           `json:"code"`
+	Message string        `json:"message"`
+	Data    model.Product `json:"data"`
+}
+
+type APIResponseVariant struct {
+	Code    int           `json:"code"`
+	Message string        `json:"message"`
+	Data    model.Variant `json:"data"`
+}
 type ProductHandler struct {
 	service interfaces.ProductService
 	appCtx  *deps.AppContext
@@ -44,7 +56,7 @@ func NewHandler(service interfaces.ProductService, appCtx *deps.AppContext) inte
 // @Param        last_name     query     string  false  "Filter by last name"
 // @Param        phone_number  query     string  false  "Filter by phone number"
 // @Param        email         query     string  false  "Filter by email"
-// @Success      200           {object}  response.APIResponse{data=model.Product}
+// @Success      200           {object}  APIResponseProduct
 // @Failure      400           {object}  apperrors.APIError "Invalid filter parameters"
 // @Failure      500           {object}  apperrors.APIError "Internal server error"
 // @Router       /products [get]
@@ -76,8 +88,8 @@ func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param request body createProductDTO true "Product payload"
-// @Success 200 {object} response.APIResponse{data=model.Product}
+// @Param request body CreateProductDTO true "Product payload"
+// @Success 200 {object} APIResponseProduct
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
@@ -128,8 +140,8 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
-// @Param request body updateProductDTO true "Update product payload"
-// @Success 200 {object} response.APIResponse{data=model.Product}
+// @Param request body UpdateProductDTO true "Update product payload"
+// @Success 200 {object} APIResponseProduct
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
 // @Router /products/{id} [patch]
@@ -172,7 +184,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {integer} response.APIResponse{data=int}
+// @Success 200 {integer} response.APIResponseInt
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -205,7 +217,7 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} response.APIResponse{data=model.Product}
+// @Success 200 {object} APIResponseProduct
 // @Failure 400 {object} apperrors.APIErrorResponse
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 500 {object} apperrors.APIErrorResponse
@@ -241,8 +253,8 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param productId path int true "Product ID"
-// @Param request body createVariantDTO true "Variant payload"
-// @Success 200 {object} response.APIResponse{data=model.Variant}
+// @Param request body CreateVariantDTO true "Variant payload"
+// @Success 200 {object} APIResponseVariant
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
@@ -302,8 +314,8 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @param productId path int true "Product ID"
 // @Param id path int true "Variant ID"
-// @Param request body updateVariantDTO true "Update variant payload"
-// @Success 200 {object} model.Variant
+// @Param request body UpdateVariantDTO true "Update variant payload"
+// @Success 200 {object} APIResponseVariant
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
 // @Router /products/{productId}/variants/{id} [patch]
@@ -353,7 +365,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param productId path int true "Product ID"
 // @Param id path int true "Variant ID"
-// @Success 200 {integer} response.APIResponse{data=int}
+// @Success 200 {integer} response.APIResponseInt
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -393,7 +405,7 @@ func (h *ProductHandler) DeleteVariant(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param productId path int true "Product ID"
 // @Param id path int true "variant ID"
-// @Success 200 {object} response.APIResponse{data=model.Variant}
+// @Success 200 {object} APIResponseVariant
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse

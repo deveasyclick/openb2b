@@ -47,4 +47,14 @@ const (
 	ErrDeleteVariant        = "error deleting variant"
 	ErrFindVariant          = "error finding variant"
 	ErrVariantNotFound      = "variant not found"
+
+	// Product
+	ErrOrderAlreadyExists = "order already exists"
+	ErrCreateOrder        = "error creating order"
+	ErrUpdateOrder        = "error updating order"
+	ErrDeleteOrder        = "error deleting order"
+	ErrFindOrder          = "error finding order"
+	ErrOrderNotFound      = "order not found"
+	ErrFilterOrder        = "error filtering orders"
+	ErrOrderNotPending    = "order not in pending"
 )

@@ -22,6 +22,109 @@ definitions:
         example: invalid request body
         type: string
     type: object
+  dto.CreateDeliveryInfoDTO:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      transportFare:
+        minimum: 0
+        type: number
+    required:
+    - address
+    type: object
+  dto.CreateDiscountInfoDTO:
+    properties:
+      amount:
+        minimum: 0
+        type: number
+      type:
+        allOf:
+        - $ref: '#/definitions/model.DiscountType'
+        enum:
+        - percentage
+        - fixed
+    required:
+    - type
+    type: object
+  dto.CreateOrderDTO:
+    properties:
+      customerId:
+        type: integer
+      delivery:
+        $ref: '#/definitions/dto.CreateDeliveryInfoDTO'
+      discount:
+        $ref: '#/definitions/dto.CreateDiscountInfoDTO'
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateOrderItemDTO'
+        type: array
+      notes:
+        maxLength: 1000
+        type: string
+      tax:
+        minimum: 0
+        type: number
+    required:
+    - customerId
+    - delivery
+    - items
+    type: object
+  dto.CreateOrderItemDTO:
+    properties:
+      quantity:
+        minimum: 1
+        type: integer
+      variantId:
+        type: integer
+    required:
+    - quantity
+    - variantId
+    type: object
+  dto.UpdateDeliveryInfoDTO:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      date:
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.DeliveryStatus'
+        enum:
+        - pending
+        - shipped
+        - delivered
+        - cancelled
+      transportFare:
+        minimum: 0
+        type: number
+    type: object
+  dto.UpdateOrderDTO:
+    properties:
+      customerId:
+        type: integer
+      deliver:
+        $ref: '#/definitions/dto.UpdateDeliveryInfoDTO'
+      discount:
+        $ref: '#/definitions/dto.CreateDiscountInfoDTO'
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateOrderItemDTO'
+        type: array
+      notes:
+        maxLength: 1000
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.OrderStatus'
+        enum:
+        - pending
+        - approved
+        - delivered
+        - cancelled
+      tax:
+        minimum: 0
+        type: number
+    type: object
   model.Address:
     properties:
       address:
@@ -78,16 +181,10 @@ definitions:
   model.DeliveryInfo:
     properties:
       address:
-        type: string
+        $ref: '#/definitions/model.Address'
       at:
         type: string
-      city:
-        type: string
-      country:
-        type: string
       date:
-        type: string
-      state:
         type: string
       status:
         $ref: '#/definitions/model.DeliveryStatus'
@@ -125,32 +222,45 @@ definitions:
     properties:
       created_at:
         type: string
-      createdBy:
-        $ref: '#/definitions/model.User'
+      customer:
+        $ref: '#/definitions/model.Customer'
       customerId:
         type: integer
       delivery:
         $ref: '#/definitions/model.DeliveryInfo'
       discount:
         $ref: '#/definitions/model.DiscountInfo'
-      distributorId:
-        type: integer
+      discountAmount:
+        description: Actual discount applied
+        type: number
       id:
         type: integer
-      notes:
-        type: string
-      orderItems:
+      items:
         items:
           $ref: '#/definitions/model.OrderItem'
         type: array
+      notes:
+        type: string
+      orderNumber:
+        type: string
       org:
         $ref: '#/definitions/model.Org'
       orgId:
         type: integer
-      requestedFor:
-        $ref: '#/definitions/model.Customer'
       status:
         $ref: '#/definitions/model.OrderStatus'
+      subtotal:
+        description: Sum of all item totals before discount and tax
+        type: number
+      tax:
+        description: Tax percentage
+        type: number
+      taxAmount:
+        description: Tax amount
+        type: number
+      total:
+        description: Final total after discount and tax
+        type: number
       updated_at:
         type: string
     type: object
@@ -160,20 +270,26 @@ definitions:
         type: string
       id:
         type: integer
-      order:
-        $ref: '#/definitions/model.Order'
       orderId:
         type: integer
-      price:
-        type: number
+      orgId:
+        type: integer
       product:
         $ref: '#/definitions/model.Product'
       productId:
         type: integer
       quantity:
         type: integer
+      total:
+        type: number
+      unitPrice:
+        type: number
       updated_at:
         type: string
+      variant:
+        $ref: '#/definitions/model.Variant'
+      variantId:
+        type: integer
     type: object
   model.OrderStatus:
     enum:
@@ -231,7 +347,7 @@ definitions:
         type: string
       users:
         items:
-          $ref: '#/definitions/model.Customer'
+          $ref: '#/definitions/model.User'
         type: array
     required:
     - email
@@ -337,6 +453,15 @@ definitions:
       stock:
         type: integer
       updated_at:
+        type: string
+    type: object
+  order.APIResponseOrder:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/model.Order'
+      message:
         type: string
     type: object
   org.Address:
@@ -510,7 +635,25 @@ definitions:
         minLength: 10
         type: string
     type: object
-  product.createProductDTO:
+  product.APIResponseProduct:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/model.Product'
+      message:
+        type: string
+    type: object
+  product.APIResponseVariant:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/model.Variant'
+      message:
+        type: string
+    type: object
+  product.CreateProductDTO:
     properties:
       category:
         maxLength: 50
@@ -528,13 +671,13 @@ definitions:
         type: string
       variants:
         items:
-          $ref: '#/definitions/product.createProductVariantDTO'
+          $ref: '#/definitions/product.CreateProductVariantDTO'
         type: array
     required:
     - name
     - variants
     type: object
-  product.createProductVariantDTO:
+  product.CreateProductVariantDTO:
     properties:
       color:
         maxLength: 30
@@ -558,7 +701,7 @@ definitions:
     - sku
     - stock
     type: object
-  product.createVariantDTO:
+  product.CreateVariantDTO:
     properties:
       color:
         maxLength: 30
@@ -582,7 +725,7 @@ definitions:
     - sku
     - stock
     type: object
-  product.updateProductDTO:
+  product.UpdateProductDTO:
     properties:
       category:
         maxLength: 50
@@ -599,7 +742,7 @@ definitions:
         minLength: 2
         type: string
     type: object
-  product.updateVariantDTO:
+  product.UpdateVariantDTO:
     properties:
       color:
         maxLength: 30
@@ -614,16 +757,6 @@ definitions:
       stock:
         minimum: 0
         type: integer
-    type: object
-  response.APIResponse:
-    properties:
-      code:
-        example: 200
-        type: integer
-      data: {}
-      message:
-        example: success
-        type: string
     type: object
   types.WebhookEvent:
     properties:
@@ -662,6 +795,198 @@ info:
   title: OpenB2B API
   version: "1.0"
 paths:
+  /orders:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of orders. Supports filtering, sorting,
+        searching, and preloading.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by field, e.g. 'created_at desc'
+        in: query
+        name: sort
+        type: string
+      - description: Comma-separated list of relations to preload. relation must start
+          with uppercase
+        in: query
+        name: preloads
+        type: string
+      - description: Comma-separated list of fields to search (must be allowed)
+        in: query
+        name: search_fields
+        type: string
+      - description: Filter by order number
+        in: query
+        name: order_number
+        type: string
+      - description: Filter by notes
+        in: query
+        name: notes
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/order.APIResponseOrder'
+        "400":
+          description: Invalid filter parameters
+          schema:
+            $ref: '#/definitions/apperrors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperrors.APIError'
+      security:
+      - BearerAuth: []
+      summary: List orders with filtering and pagination
+      tags:
+      - orders
+    post:
+      consumes:
+      - application/json
+      description: Create a new order
+      parameters:
+      - description: Order payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOrderDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/order.APIResponseOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create orders
+      tags:
+      - orders
+  /orders/{id}:
+    delete:
+      description: Delete a order by ID
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete order
+      tags:
+      - orders
+    get:
+      description: Get a order by ID
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/order.APIResponseOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get order
+      tags:
+      - orders
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing order by ID
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update order payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateOrderDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/order.APIResponseOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update order
+      tags:
+      - orders
   /orgs:
     post:
       consumes:
@@ -849,12 +1174,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Product'
-              type: object
+            $ref: '#/definitions/product.APIResponseProduct'
         "400":
           description: Invalid filter parameters
           schema:
@@ -878,19 +1198,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.createProductDTO'
+          $ref: '#/definitions/product.CreateProductDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Product'
-              type: object
+            $ref: '#/definitions/product.APIResponseProduct'
         "400":
           description: Bad Request
           schema:
@@ -955,12 +1270,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Product'
-              type: object
+            $ref: '#/definitions/product.APIResponseProduct'
         "400":
           description: Bad Request
           schema:
@@ -993,19 +1303,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.updateProductDTO'
+          $ref: '#/definitions/product.UpdateProductDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Product'
-              type: object
+            $ref: '#/definitions/product.APIResponseProduct'
         "400":
           description: Bad Request
           schema:
@@ -1076,12 +1381,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Variant'
-              type: object
+            $ref: '#/definitions/product.APIResponseVariant'
         "400":
           description: Bad Request
           schema:
@@ -1115,19 +1415,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.createVariantDTO'
+          $ref: '#/definitions/product.CreateVariantDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Variant'
-              type: object
+            $ref: '#/definitions/product.APIResponseVariant'
         "400":
           description: Bad Request
           schema:
@@ -1166,14 +1461,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.updateVariantDTO'
+          $ref: '#/definitions/product.UpdateVariantDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Variant'
+            $ref: '#/definitions/product.APIResponseVariant'
         "400":
           description: Bad Request
           schema:
