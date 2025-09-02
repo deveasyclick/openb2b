@@ -125,7 +125,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/order.CreateOrderDTO"
+                            "$ref": "#/definitions/dto.CreateOrderDTO"
                         }
                     }
                 ],
@@ -289,7 +289,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/order.UpdateOrderDTO"
+                            "$ref": "#/definitions/dto.UpdateOrderDTO"
                         }
                     }
                 ],
@@ -1212,6 +1212,162 @@
                 }
             }
         },
+        "dto.CreateDeliveryInfoDTO": {
+            "type": "object",
+            "required": [
+                "address"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "transportFare": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.CreateDiscountInfoDTO": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "type": {
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DiscountType"
+                        }
+                    ]
+                }
+            }
+        },
+        "dto.CreateOrderDTO": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "delivery",
+                "items"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "integer"
+                },
+                "delivery": {
+                    "$ref": "#/definitions/dto.CreateDeliveryInfoDTO"
+                },
+                "discount": {
+                    "$ref": "#/definitions/dto.CreateDiscountInfoDTO"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateOrderItemDTO"
+                    }
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "tax": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.CreateOrderItemDTO": {
+            "type": "object",
+            "required": [
+                "quantity",
+                "variantId"
+            ],
+            "properties": {
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "variantId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateDeliveryInfoDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "status": {
+                    "enum": [
+                        "pending",
+                        "shipped",
+                        "delivered",
+                        "cancelled"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DeliveryStatus"
+                        }
+                    ]
+                },
+                "transportFare": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.UpdateOrderDTO": {
+            "type": "object",
+            "properties": {
+                "customerId": {
+                    "type": "integer"
+                },
+                "deliver": {
+                    "$ref": "#/definitions/dto.UpdateDeliveryInfoDTO"
+                },
+                "discount": {
+                    "$ref": "#/definitions/dto.CreateDiscountInfoDTO"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateOrderItemDTO"
+                    }
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "status": {
+                    "enum": [
+                        "pending",
+                        "approved",
+                        "delivered",
+                        "cancelled"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.OrderStatus"
+                        }
+                    ]
+                },
+                "tax": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
         "model.Address": {
             "type": "object",
             "properties": {
@@ -1366,6 +1522,10 @@
                 "discount": {
                     "$ref": "#/definitions/model.DiscountInfo"
                 },
+                "discountAmount": {
+                    "description": "Actual discount applied",
+                    "type": "number"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -1390,10 +1550,20 @@
                 "status": {
                     "$ref": "#/definitions/model.OrderStatus"
                 },
+                "subtotal": {
+                    "description": "Sum of all item totals before discount and tax",
+                    "type": "number"
+                },
                 "tax": {
+                    "description": "Tax percentage",
+                    "type": "number"
+                },
+                "taxAmount": {
+                    "description": "Tax amount",
                     "type": "number"
                 },
                 "total": {
+                    "description": "Final total after discount and tax",
                     "type": "number"
                 },
                 "updated_at": {
@@ -1526,7 +1696,7 @@
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Customer"
+                        "$ref": "#/definitions/model.User"
                     }
                 }
             }
@@ -1688,128 +1858,6 @@
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "order.CreateDeliveryInfoDTO": {
-            "type": "object",
-            "required": [
-                "address",
-                "transportFare"
-            ],
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/model.Address"
-                },
-                "transportFare": {
-                    "type": "number",
-                    "minimum": 0
-                }
-            }
-        },
-        "order.CreateDiscountInfoDTO": {
-            "type": "object",
-            "required": [
-                "amount",
-                "type"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "type": {
-                    "enum": [
-                        "percentage",
-                        "fixed"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.DiscountType"
-                        }
-                    ]
-                }
-            }
-        },
-        "order.CreateOrderDTO": {
-            "type": "object",
-            "required": [
-                "customerId",
-                "delivery",
-                "items"
-            ],
-            "properties": {
-                "customerId": {
-                    "type": "integer"
-                },
-                "delivery": {
-                    "$ref": "#/definitions/order.CreateDeliveryInfoDTO"
-                },
-                "discount": {
-                    "$ref": "#/definitions/order.CreateDiscountInfoDTO"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/order.CreateOrderItemDTO"
-                    }
-                },
-                "notes": {
-                    "type": "string",
-                    "maxLength": 1000
-                },
-                "tax": {
-                    "type": "number",
-                    "minimum": 0
-                }
-            }
-        },
-        "order.CreateOrderItemDTO": {
-            "type": "object",
-            "required": [
-                "quantity",
-                "unitPrice",
-                "variantId"
-            ],
-            "properties": {
-                "quantity": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "unitPrice": {
-                    "type": "number"
-                },
-                "variantId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "order.UpdateOrderDTO": {
-            "type": "object",
-            "properties": {
-                "discount": {
-                    "$ref": "#/definitions/order.CreateDiscountInfoDTO"
-                },
-                "notes": {
-                    "type": "string",
-                    "maxLength": 1000
-                },
-                "status": {
-                    "enum": [
-                        "pending",
-                        "approved",
-                        "delivered",
-                        "cancelled"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.OrderStatus"
-                        }
-                    ]
-                },
-                "tax": {
-                    "type": "number",
-                    "minimum": 0
                 }
             }
         },

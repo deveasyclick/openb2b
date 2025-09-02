@@ -22,6 +22,109 @@ definitions:
         example: invalid request body
         type: string
     type: object
+  dto.CreateDeliveryInfoDTO:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      transportFare:
+        minimum: 0
+        type: number
+    required:
+    - address
+    type: object
+  dto.CreateDiscountInfoDTO:
+    properties:
+      amount:
+        minimum: 0
+        type: number
+      type:
+        allOf:
+        - $ref: '#/definitions/model.DiscountType'
+        enum:
+        - percentage
+        - fixed
+    required:
+    - type
+    type: object
+  dto.CreateOrderDTO:
+    properties:
+      customerId:
+        type: integer
+      delivery:
+        $ref: '#/definitions/dto.CreateDeliveryInfoDTO'
+      discount:
+        $ref: '#/definitions/dto.CreateDiscountInfoDTO'
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateOrderItemDTO'
+        type: array
+      notes:
+        maxLength: 1000
+        type: string
+      tax:
+        minimum: 0
+        type: number
+    required:
+    - customerId
+    - delivery
+    - items
+    type: object
+  dto.CreateOrderItemDTO:
+    properties:
+      quantity:
+        minimum: 1
+        type: integer
+      variantId:
+        type: integer
+    required:
+    - quantity
+    - variantId
+    type: object
+  dto.UpdateDeliveryInfoDTO:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      date:
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.DeliveryStatus'
+        enum:
+        - pending
+        - shipped
+        - delivered
+        - cancelled
+      transportFare:
+        minimum: 0
+        type: number
+    type: object
+  dto.UpdateOrderDTO:
+    properties:
+      customerId:
+        type: integer
+      deliver:
+        $ref: '#/definitions/dto.UpdateDeliveryInfoDTO'
+      discount:
+        $ref: '#/definitions/dto.CreateDiscountInfoDTO'
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateOrderItemDTO'
+        type: array
+      notes:
+        maxLength: 1000
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.OrderStatus'
+        enum:
+        - pending
+        - approved
+        - delivered
+        - cancelled
+      tax:
+        minimum: 0
+        type: number
+    type: object
   model.Address:
     properties:
       address:
@@ -127,6 +230,9 @@ definitions:
         $ref: '#/definitions/model.DeliveryInfo'
       discount:
         $ref: '#/definitions/model.DiscountInfo'
+      discountAmount:
+        description: Actual discount applied
+        type: number
       id:
         type: integer
       items:
@@ -143,9 +249,17 @@ definitions:
         type: integer
       status:
         $ref: '#/definitions/model.OrderStatus'
+      subtotal:
+        description: Sum of all item totals before discount and tax
+        type: number
       tax:
+        description: Tax percentage
+        type: number
+      taxAmount:
+        description: Tax amount
         type: number
       total:
+        description: Final total after discount and tax
         type: number
       updated_at:
         type: string
@@ -233,7 +347,7 @@ definitions:
         type: string
       users:
         items:
-          $ref: '#/definitions/model.Customer'
+          $ref: '#/definitions/model.User'
         type: array
     required:
     - email
@@ -349,88 +463,6 @@ definitions:
         $ref: '#/definitions/model.Order'
       message:
         type: string
-    type: object
-  order.CreateDeliveryInfoDTO:
-    properties:
-      address:
-        $ref: '#/definitions/model.Address'
-      transportFare:
-        minimum: 0
-        type: number
-    required:
-    - address
-    - transportFare
-    type: object
-  order.CreateDiscountInfoDTO:
-    properties:
-      amount:
-        minimum: 0
-        type: number
-      type:
-        allOf:
-        - $ref: '#/definitions/model.DiscountType'
-        enum:
-        - percentage
-        - fixed
-    required:
-    - amount
-    - type
-    type: object
-  order.CreateOrderDTO:
-    properties:
-      customerId:
-        type: integer
-      delivery:
-        $ref: '#/definitions/order.CreateDeliveryInfoDTO'
-      discount:
-        $ref: '#/definitions/order.CreateDiscountInfoDTO'
-      items:
-        items:
-          $ref: '#/definitions/order.CreateOrderItemDTO'
-        type: array
-      notes:
-        maxLength: 1000
-        type: string
-      tax:
-        minimum: 0
-        type: number
-    required:
-    - customerId
-    - delivery
-    - items
-    type: object
-  order.CreateOrderItemDTO:
-    properties:
-      quantity:
-        minimum: 1
-        type: integer
-      unitPrice:
-        type: number
-      variantId:
-        type: integer
-    required:
-    - quantity
-    - unitPrice
-    - variantId
-    type: object
-  order.UpdateOrderDTO:
-    properties:
-      discount:
-        $ref: '#/definitions/order.CreateDiscountInfoDTO'
-      notes:
-        maxLength: 1000
-        type: string
-      status:
-        allOf:
-        - $ref: '#/definitions/model.OrderStatus'
-        enum:
-        - pending
-        - approved
-        - delivered
-        - cancelled
-      tax:
-        minimum: 0
-        type: number
     type: object
   org.Address:
     description: Address
@@ -829,7 +861,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/order.CreateOrderDTO'
+          $ref: '#/definitions/dto.CreateOrderDTO'
       produces:
       - application/json
       responses:
@@ -934,7 +966,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/order.UpdateOrderDTO'
+          $ref: '#/definitions/dto.UpdateOrderDTO'
       produces:
       - application/json
       responses:
