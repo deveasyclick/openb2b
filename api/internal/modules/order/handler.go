@@ -9,6 +9,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	"github.com/deveasyclick/openb2b/internal/shared/dto"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
@@ -81,7 +82,7 @@ func (h *OrderHandler) Filter(w http.ResponseWriter, r *http.Request) {
 // @Tags orders
 // @Accept json
 // @Produce json
-// @Param request body CreateOrderDTO true "Order payload"
+// @Param request body dto.CreateOrderDTO true "Order payload"
 // @Success 200 {object} APIResponseOrder
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
@@ -90,7 +91,7 @@ func (h *OrderHandler) Filter(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 func (h *OrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req CreateOrderDTO
+	var req dto.CreateOrderDTO
 	if errs := validator.ValidateRequest(r, &req); len(errs) > 0 {
 		validator.WriteValidationResponse(w, errs)
 		return
@@ -102,10 +103,8 @@ func (h *OrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert request to model
-	order := req.ToModel(userFromContext.Org)
-
-	if err = h.service.Create(ctx, &order); err != nil {
+	order, err := h.service.Create(ctx, req, userFromContext.Org)
+	if err != nil {
 		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateOrder, h.appCtx.Logger)
 		return
 	}
@@ -120,7 +119,7 @@ func (h *OrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Order ID"
-// @Param request body UpdateOrderDTO true "Update order payload"
+// @Param request body dto.UpdateOrderDTO true "Update order payload"
 // @Success 200 {object} APIResponseOrder
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -134,7 +133,7 @@ func (h *OrderHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateOrderDTO
+	var req dto.UpdateOrderDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
@@ -154,10 +153,7 @@ func (h *OrderHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update only provided fields
-	req.ApplyModel(existingOrder)
-
-	if err := h.service.Update(ctx, existingOrder); err != nil {
+	if err := h.service.Update(ctx, existingOrder, req); err != nil {
 		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateOrder, h.appCtx.Logger)
 		return
 	}
