@@ -142,6 +142,11 @@ func (h *OrderHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// Get existing order
 	existingOrder, err := h.service.FindByID(ctx, uint(id))
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrOrderNotFound, h.appCtx.Logger)
+			return
+		}
+
 		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateOrder, h.appCtx.Logger)
 		return
 	}
