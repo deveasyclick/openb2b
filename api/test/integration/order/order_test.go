@@ -216,7 +216,7 @@ func TestOrderHandlers(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, order.Data.Notes, "This is a note")
 		assert.Equal(t, order.Data.OrderNumber, "ORD-123")
-		assert.Empty(t, order.Data.Items)
+		assert.Equal(t, len(order.Data.Items), 2)
 	})
 
 	t.Run("Update order - (duplicate order items) success", func(t *testing.T) {

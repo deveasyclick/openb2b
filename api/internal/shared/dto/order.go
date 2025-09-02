@@ -114,6 +114,7 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order, variantMap *map[uint]m
 	if dto.Discount != nil {
 		order.Discount = dto.Discount.ToModel()
 	}
+
 	if dto.Tax != nil {
 		order.Tax = *dto.Tax
 	}
@@ -126,9 +127,13 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order, variantMap *map[uint]m
 		order.CustomerID = *dto.CustomerID
 	}
 
-	if dto.Items != nil && variantMap != nil {
+	if len(dto.Items) > 0 && len(*variantMap) > 0 {
+		order.Items = make([]model.OrderItem, 0, len(dto.Items))
 		for _, item := range dto.Items {
-			v := (*variantMap)[item.VariantID]
+			v, ok := (*variantMap)[item.VariantID]
+			if !ok {
+				continue // or handle error
+			}
 			order.Items = append(order.Items, model.OrderItem{
 				VariantID: v.ID,
 				ProductID: v.ProductID,
@@ -138,7 +143,6 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order, variantMap *map[uint]m
 				OrgID:     order.OrgID,
 			})
 		}
-
 	}
 
 	calculateTotals(order)
@@ -178,10 +182,13 @@ func calculateTotals(order *model.Order) {
 	// Calculate discount
 	appliedDiscount := 0.0
 	discount := order.Discount
-	if discount.Type == "percentage" {
+	switch discount.Type {
+	case model.DiscountPercentage:
 		appliedDiscount = subtotal * (discount.Amount / 100)
-	} else if discount.Type == "fixed" {
+	case model.DiscountFixed:
 		appliedDiscount = discount.Amount
+	default:
+		appliedDiscount = 0 // fallback, in case of unknown type
 	}
 	order.AppliedDiscount = appliedDiscount
 
