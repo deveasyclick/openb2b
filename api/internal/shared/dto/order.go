@@ -1,9 +1,10 @@
-package order
+package dto
 
 import (
 	"time"
 
 	"github.com/deveasyclick/openb2b/internal/model"
+	generateordernumber "github.com/deveasyclick/openb2b/internal/utils/generateOrderNumber"
 )
 
 //
@@ -11,20 +12,18 @@ import (
 //
 
 type CreateOrderItemDTO struct {
-	VariantID uint    `json:"variantId" validate:"required"`
-	ProductID uint    `json:"productId" validate:"required"`
-	Quantity  int     `json:"quantity" validate:"required,min=1"`
-	UnitPrice float64 `json:"unitPrice" validate:"required,gt=0"`
+	VariantID uint `json:"variantId" validate:"required"`
+	Quantity  int  `json:"quantity" validate:"required,min=1"`
 }
 
-func (i *CreateOrderItemDTO) ToModel(orgID uint) model.OrderItem {
+func (i *CreateOrderItemDTO) ToModel(orgID uint, variant model.Variant) model.OrderItem {
 	item := model.OrderItem{
 		VariantID: i.VariantID,
 		Quantity:  i.Quantity,
-		UnitPrice: i.UnitPrice,
-		Total:     float64(i.Quantity) * i.UnitPrice,
+		UnitPrice: variant.Price,
+		Total:     float64(i.Quantity) * variant.Price,
 		OrgID:     orgID,
-		ProductID: i.ProductID,
+		ProductID: variant.ProductID,
 	}
 
 	return item
@@ -32,7 +31,7 @@ func (i *CreateOrderItemDTO) ToModel(orgID uint) model.OrderItem {
 
 type CreateDeliveryInfoDTO struct {
 	Address       *model.Address `json:"address" validate:"required"`
-	TransportFare float64        `json:"transportFare" validate:"required,min=0"`
+	TransportFare float64        `json:"transportFare" validate:"min=0"`
 }
 
 func (d *CreateDeliveryInfoDTO) ToModel() model.DeliveryInfo {
@@ -44,7 +43,7 @@ func (d *CreateDeliveryInfoDTO) ToModel() model.DeliveryInfo {
 
 type CreateDiscountInfoDTO struct {
 	Type   model.DiscountType `json:"type" validate:"required,oneof=percentage fixed"`
-	Amount float64            `json:"amount" validate:"required,min=0"`
+	Amount float64            `json:"amount" validate:"min=0"`
 }
 
 func (di *CreateDiscountInfoDTO) ToModel() model.DiscountInfo {
@@ -63,9 +62,9 @@ type CreateOrderDTO struct {
 	Tax        float64               `json:"tax" validate:"min=0"`
 }
 
-func (dto *CreateOrderDTO) ToModel(orgID uint) model.Order {
+func (dto *CreateOrderDTO) ToModel(variantMap map[uint]model.Variant, orgID uint) model.Order {
 	order := model.Order{
-		OrderNumber: generateOrderNumber(),
+		OrderNumber: generateordernumber.GenerateOrderNumber(),
 		CustomerID:  dto.CustomerID,
 		OrgID:       orgID,
 		Delivery:    dto.Delivery.ToModel(),
@@ -74,13 +73,20 @@ func (dto *CreateOrderDTO) ToModel(orgID uint) model.Order {
 		Tax:         dto.Tax,
 		Status:      model.OrderStatusPending,
 	}
-	// Map items
+
 	for _, item := range dto.Items {
-		order.Items = append(order.Items, item.ToModel(orgID))
+		v := variantMap[item.VariantID]
+		order.Items = append(order.Items, model.OrderItem{
+			VariantID: v.ID,
+			ProductID: v.ProductID,
+			UnitPrice: v.Price,
+			Quantity:  item.Quantity,
+			Total:     float64(item.Quantity) * v.Price,
+			OrgID:     orgID,
+		})
 	}
 
 	calculateTotals(&order)
-
 	return order
 }
 
@@ -89,15 +95,16 @@ func (dto *CreateOrderDTO) ToModel(orgID uint) model.Order {
 //
 
 type UpdateOrderDTO struct {
-	Status   *model.OrderStatus     `json:"status" validate:"omitempty,oneof=pending approved delivered cancelled"`
-	Notes    *string                `json:"notes" validate:"omitempty,max=1000"`
-	Discount *CreateDiscountInfoDTO `json:"discount" validate:"omitempty"`
-	Tax      *float64               `json:"tax" validate:"omitempty,min=0"`
-	Items    []*CreateOrderItemDTO  `json:"items" validate:"omitempty,dive"`
-	Delivery *UpdateDeliveryInfoDTO `json:"deliver" validate:"omitempty"`
+	Status     *model.OrderStatus     `json:"status" validate:"omitempty,oneof=pending approved delivered cancelled"`
+	Notes      *string                `json:"notes" validate:"omitempty,max=1000"`
+	Discount   *CreateDiscountInfoDTO `json:"discount" validate:"omitempty"`
+	Tax        *float64               `json:"tax" validate:"omitempty,min=0"`
+	Items      []*CreateOrderItemDTO  `json:"items" validate:"omitempty,dive"`
+	Delivery   *UpdateDeliveryInfoDTO `json:"deliver" validate:"omitempty"`
+	CustomerID *uint                  `json:"customerId" validate:"omitempty"`
 }
 
-func (dto *UpdateOrderDTO) ApplyModel(order *model.Order) {
+func (dto *UpdateOrderDTO) ApplyModel(order *model.Order, variantMap *map[uint]model.Variant) {
 	if dto.Status != nil {
 		order.Status = *dto.Status
 	}
@@ -115,12 +122,23 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order) {
 		dto.Delivery.ApplyModel(&order.Delivery)
 	}
 
-	if dto.Items != nil {
-		var updatedItems []model.OrderItem
-		for _, updatedItem := range dto.Items {
-			updatedItems = append(order.Items, updatedItem.ToModel(order.OrgID))
+	if dto.CustomerID != nil {
+		order.CustomerID = *dto.CustomerID
+	}
+
+	if dto.Items != nil && variantMap != nil {
+		for _, item := range dto.Items {
+			v := (*variantMap)[item.VariantID]
+			order.Items = append(order.Items, model.OrderItem{
+				VariantID: v.ID,
+				ProductID: v.ProductID,
+				UnitPrice: v.Price,
+				Quantity:  item.Quantity,
+				Total:     float64(item.Quantity) * v.Price,
+				OrgID:     order.OrgID,
+			})
 		}
-		order.Items = updatedItems
+
 	}
 
 	calculateTotals(order)
@@ -148,21 +166,6 @@ func (dto *UpdateDeliveryInfoDTO) ApplyModel(delivery *model.DeliveryInfo) {
 	}
 }
 
-type UpdateOrderItemDTO struct {
-	Quantity  *int     `json:"quantity" validate:"omitempty,min=1"`
-	UnitPrice *float64 `json:"unitPrice" validate:"omitempty,gt=0"`
-}
-
-func (dto *UpdateOrderItemDTO) ApplyModel(item *model.OrderItem) {
-	if dto.Quantity != nil {
-		item.Quantity = *dto.Quantity
-	}
-	if dto.UnitPrice != nil {
-		item.UnitPrice = *dto.UnitPrice
-	}
-	item.Total = float64(item.Quantity) * item.UnitPrice
-}
-
 // Calculate totals
 func calculateTotals(order *model.Order) {
 	// Calculate subtotal
@@ -187,6 +190,7 @@ func calculateTotals(order *model.Order) {
 	if order.Tax > 0 {
 		taxAmount = (subtotal - discountAmount) * (order.Tax / 100)
 	}
+	order.TaxAmount = taxAmount
 
 	// Final total
 	order.Total = subtotal - discountAmount + taxAmount

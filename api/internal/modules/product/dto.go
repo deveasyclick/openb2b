@@ -2,6 +2,7 @@ package product
 
 import "github.com/deveasyclick/openb2b/internal/model"
 
+// TODO: move to dto package
 type CreateProductVariantDTO struct {
 	SKU   string  `json:"sku" validate:"required,min=2,max=50"`
 	Color string  `json:"color" validate:"omitempty,min=1,max=30"`
