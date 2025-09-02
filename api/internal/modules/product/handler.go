@@ -9,6 +9,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	"github.com/deveasyclick/openb2b/internal/shared/dto"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/pagination"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
@@ -88,7 +89,7 @@ func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param request body CreateProductDTO true "Product payload"
+// @Param request body dto.CreateProductDTO true "Product payload"
 // @Success 200 {object} APIResponseProduct
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
@@ -97,7 +98,7 @@ func (h *ProductHandler) Filter(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req CreateProductDTO
+	var req dto.CreateProductDTO
 	if errs := validator.ValidateRequest(r, &req); len(errs) > 0 {
 		validator.WriteValidationResponse(w, errs)
 		return
@@ -140,7 +141,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
-// @Param request body UpdateProductDTO true "Update product payload"
+// @Param request body dto.UpdateProductDTO true "Update product payload"
 // @Success 200 {object} APIResponseProduct
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -154,7 +155,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateProductDTO
+	var req dto.UpdateProductDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
@@ -253,7 +254,7 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param productId path int true "Product ID"
-// @Param request body CreateVariantDTO true "Variant payload"
+// @Param request body dto.CreateVariantDTO true "Variant payload"
 // @Success 200 {object} APIResponseVariant
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
@@ -268,7 +269,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	var req CreateVariantDTO
+	var req dto.CreateVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
@@ -314,7 +315,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @param productId path int true "Product ID"
 // @Param id path int true "Variant ID"
-// @Param request body UpdateVariantDTO true "Update variant payload"
+// @Param request body dto.UpdateVariantDTO true "Update variant payload"
 // @Success 200 {object} APIResponseVariant
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -334,7 +335,7 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateVariantDTO
+	var req dto.UpdateVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return

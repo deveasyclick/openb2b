@@ -22,6 +22,99 @@ definitions:
         example: invalid request body
         type: string
     type: object
+  dto.AddressOptional:
+    properties:
+      address:
+        description: |-
+          Address of the organization
+          Required: false
+        example: 123 Market Street
+        maxLength: 100
+        minLength: 5
+        type: string
+      city:
+        description: |-
+          City where the organization is located
+          Required: false
+        example: San Francisco
+        maxLength: 30
+        minLength: 2
+        type: string
+      country:
+        description: |-
+          Country where the organization is registered
+          Required: false
+        example: USA
+        maxLength: 100
+        minLength: 2
+        type: string
+      state:
+        description: |-
+          State where the organization is located
+          Required: false
+        example: California
+        maxLength: 30
+        minLength: 2
+        type: string
+      zip:
+        description: |-
+          Zip where the organization is located
+          Required: false
+        example: "02912"
+        maxLength: 30
+        minLength: 2
+        type: string
+    type: object
+  dto.AddressRequired:
+    description: Address
+    properties:
+      address:
+        description: |-
+          Address of the organization
+          Required: true
+        example: 123 Market Street
+        maxLength: 100
+        minLength: 5
+        type: string
+      city:
+        description: |-
+          City where the organization is located
+          Required: true
+        example: San Francisco
+        maxLength: 30
+        minLength: 2
+        type: string
+      country:
+        description: |-
+          Country where the organization is registered
+          Required: true
+        example: USA
+        maxLength: 100
+        minLength: 2
+        type: string
+      state:
+        description: |-
+          State where the organization is located
+          Required: true
+        example: California
+        maxLength: 30
+        minLength: 2
+        type: string
+      zip:
+        description: |-
+          Zip where the organization is located
+          Required: true
+        example: "02912"
+        maxLength: 30
+        minLength: 2
+        type: string
+    required:
+    - address
+    - city
+    - country
+    - state
+    - zip
+    type: object
   dto.CreateDeliveryInfoDTO:
     properties:
       address:
@@ -80,6 +173,133 @@ definitions:
     - quantity
     - variantId
     type: object
+  dto.CreateOrgDTO:
+    description: Organization creation request
+    properties:
+      address:
+        $ref: '#/definitions/dto.AddressRequired'
+      email:
+        description: |-
+          Contact email
+          Required: true
+        example: contact@openb2b.io
+        type: string
+      logo:
+        description: |-
+          Logo URL of the organization
+          Required: false
+        example: https://example.com/logo.png
+        type: string
+      name:
+        description: |-
+          Name of the organization (short name / brand)
+          Required: true
+          Min length: 3
+          Max length: 50
+        example: OpenB2B
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationName:
+        description: |-
+          Full legal organization name
+          Required: true
+        example: OpenB2B Technologies Inc.
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationUrl:
+        description: |-
+          Official website URL
+          Required: false
+        example: https://openb2b.io
+        type: string
+      phone:
+        description: |-
+          Contact phone
+          Required: true
+        example: +1-202-555-0199
+        maxLength: 50
+        minLength: 10
+        type: string
+    required:
+    - email
+    - name
+    - organizationName
+    - phone
+    type: object
+  dto.CreateProductDTO:
+    properties:
+      category:
+        maxLength: 50
+        minLength: 2
+        type: string
+      description:
+        maxLength: 1000
+        minLength: 2
+        type: string
+      imageUrl:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      variants:
+        items:
+          $ref: '#/definitions/dto.CreateProductVariantDTO'
+        type: array
+    required:
+    - name
+    - variants
+    type: object
+  dto.CreateProductVariantDTO:
+    properties:
+      color:
+        maxLength: 30
+        minLength: 1
+        type: string
+      price:
+        type: number
+      size:
+        maxLength: 30
+        minLength: 1
+        type: string
+      sku:
+        maxLength: 50
+        minLength: 2
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - price
+    - sku
+    - stock
+    type: object
+  dto.CreateVariantDTO:
+    properties:
+      color:
+        maxLength: 30
+        minLength: 1
+        type: string
+      price:
+        type: number
+      size:
+        maxLength: 30
+        minLength: 1
+        type: string
+      sku:
+        maxLength: 50
+        minLength: 2
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - price
+    - sku
+    - stock
+    type: object
   dto.UpdateDeliveryInfoDTO:
     properties:
       address:
@@ -124,6 +344,77 @@ definitions:
       tax:
         minimum: 0
         type: number
+    type: object
+  dto.UpdateOrgDTO:
+    description: Organization update request
+    properties:
+      address:
+        allOf:
+        - $ref: '#/definitions/dto.AddressOptional'
+        description: Address of the organization
+      email:
+        description: Contact email
+        example: contact@openb2b.io
+        type: string
+      logo:
+        description: Logo URL of the organization
+        example: https://example.com/logo.png
+        type: string
+      name:
+        description: Name of the organization
+        example: OpenB2B
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationName:
+        description: Full legal organization name
+        example: OpenB2B Technologies Inc.
+        maxLength: 50
+        minLength: 3
+        type: string
+      organizationUrl:
+        description: Official website URL
+        example: https://openb2b.io
+        type: string
+      phone:
+        description: Contact phone
+        example: +1-202-555-0199
+        maxLength: 50
+        minLength: 10
+        type: string
+    type: object
+  dto.UpdateProductDTO:
+    properties:
+      category:
+        maxLength: 50
+        minLength: 2
+        type: string
+      description:
+        maxLength: 1000
+        minLength: 2
+        type: string
+      imageUrl:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  dto.UpdateVariantDTO:
+    properties:
+      color:
+        maxLength: 30
+        minLength: 1
+        type: string
+      price:
+        type: number
+      size:
+        maxLength: 30
+        minLength: 1
+        type: string
+      stock:
+        minimum: 0
+        type: integer
     type: object
   model.Address:
     properties:
@@ -220,6 +511,9 @@ definitions:
     - DiscountFixed
   model.Order:
     properties:
+      appliedDiscount:
+        description: Actual discount applied
+        type: number
       created_at:
         type: string
       customer:
@@ -230,9 +524,6 @@ definitions:
         $ref: '#/definitions/model.DeliveryInfo'
       discount:
         $ref: '#/definitions/model.DiscountInfo'
-      discountAmount:
-        description: Actual discount applied
-        type: number
       id:
         type: integer
       items:
@@ -464,177 +755,6 @@ definitions:
       message:
         type: string
     type: object
-  org.Address:
-    description: Address
-    properties:
-      address:
-        description: |-
-          Address of the organization
-          Required: true
-        example: 123 Market Street
-        maxLength: 100
-        minLength: 5
-        type: string
-      city:
-        description: |-
-          City where the organization is located
-          Required: true
-        example: San Francisco
-        maxLength: 30
-        minLength: 2
-        type: string
-      country:
-        description: |-
-          Country where the organization is registered
-          Required: true
-        example: USA
-        maxLength: 100
-        minLength: 2
-        type: string
-      state:
-        description: |-
-          State where the organization is located
-          Required: true
-        example: California
-        maxLength: 30
-        minLength: 2
-        type: string
-      zip:
-        description: |-
-          Zip where the organization is located
-          Required: true
-        example: "02912"
-        maxLength: 30
-        minLength: 2
-        type: string
-    required:
-    - address
-    - city
-    - country
-    - state
-    - zip
-    type: object
-  org.UpdateAddressDTO:
-    properties:
-      address:
-        example: 123 Market Street
-        maxLength: 100
-        minLength: 5
-        type: string
-      city:
-        example: San Francisco
-        maxLength: 30
-        minLength: 2
-        type: string
-      country:
-        example: USA
-        maxLength: 100
-        minLength: 2
-        type: string
-      state:
-        example: California
-        maxLength: 30
-        minLength: 2
-        type: string
-      zip:
-        example: "02912"
-        maxLength: 30
-        minLength: 2
-        type: string
-    type: object
-  org.createDTO:
-    description: Organization creation request
-    properties:
-      address:
-        $ref: '#/definitions/org.Address'
-      email:
-        description: |-
-          Contact email
-          Required: true
-        example: contact@openb2b.io
-        type: string
-      logo:
-        description: |-
-          Logo URL of the organization
-          Required: false
-        example: https://example.com/logo.png
-        type: string
-      name:
-        description: |-
-          Name of the organization (short name / brand)
-          Required: true
-          Min length: 3
-          Max length: 50
-        example: OpenB2B
-        maxLength: 50
-        minLength: 3
-        type: string
-      organizationName:
-        description: |-
-          Full legal organization name
-          Required: true
-        example: OpenB2B Technologies Inc.
-        maxLength: 50
-        minLength: 3
-        type: string
-      organizationUrl:
-        description: |-
-          Official website URL
-          Required: false
-        example: https://openb2b.io
-        type: string
-      phone:
-        description: |-
-          Contact phone
-          Required: true
-        example: +1-202-555-0199
-        maxLength: 50
-        minLength: 10
-        type: string
-    required:
-    - email
-    - name
-    - organizationName
-    - phone
-    type: object
-  org.updateDTO:
-    description: Organization update request
-    properties:
-      address:
-        allOf:
-        - $ref: '#/definitions/org.UpdateAddressDTO'
-        description: Address of the organization
-      email:
-        description: Contact email
-        example: contact@openb2b.io
-        type: string
-      logo:
-        description: Logo URL of the organization
-        example: https://example.com/logo.png
-        type: string
-      name:
-        description: Name of the organization
-        example: OpenB2B
-        maxLength: 50
-        minLength: 3
-        type: string
-      organizationName:
-        description: Full legal organization name
-        example: OpenB2B Technologies Inc.
-        maxLength: 50
-        minLength: 3
-        type: string
-      organizationUrl:
-        description: Official website URL
-        example: https://openb2b.io
-        type: string
-      phone:
-        description: Contact phone
-        example: +1-202-555-0199
-        maxLength: 50
-        minLength: 10
-        type: string
-    type: object
   product.APIResponseProduct:
     properties:
       code:
@@ -652,111 +772,6 @@ definitions:
         $ref: '#/definitions/model.Variant'
       message:
         type: string
-    type: object
-  product.CreateProductDTO:
-    properties:
-      category:
-        maxLength: 50
-        minLength: 2
-        type: string
-      description:
-        maxLength: 1000
-        minLength: 2
-        type: string
-      imageUrl:
-        type: string
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-      variants:
-        items:
-          $ref: '#/definitions/product.CreateProductVariantDTO'
-        type: array
-    required:
-    - name
-    - variants
-    type: object
-  product.CreateProductVariantDTO:
-    properties:
-      color:
-        maxLength: 30
-        minLength: 1
-        type: string
-      price:
-        type: number
-      size:
-        maxLength: 30
-        minLength: 1
-        type: string
-      sku:
-        maxLength: 50
-        minLength: 2
-        type: string
-      stock:
-        minimum: 0
-        type: integer
-    required:
-    - price
-    - sku
-    - stock
-    type: object
-  product.CreateVariantDTO:
-    properties:
-      color:
-        maxLength: 30
-        minLength: 1
-        type: string
-      price:
-        type: number
-      size:
-        maxLength: 30
-        minLength: 1
-        type: string
-      sku:
-        maxLength: 50
-        minLength: 2
-        type: string
-      stock:
-        minimum: 0
-        type: integer
-    required:
-    - price
-    - sku
-    - stock
-    type: object
-  product.UpdateProductDTO:
-    properties:
-      category:
-        maxLength: 50
-        minLength: 2
-        type: string
-      description:
-        maxLength: 1000
-        minLength: 2
-        type: string
-      imageUrl:
-        type: string
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-    type: object
-  product.UpdateVariantDTO:
-    properties:
-      color:
-        maxLength: 30
-        minLength: 1
-        type: string
-      price:
-        type: number
-      size:
-        maxLength: 30
-        minLength: 1
-        type: string
-      stock:
-        minimum: 0
-        type: integer
     type: object
   types.WebhookEvent:
     properties:
@@ -998,7 +1013,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/org.createDTO'
+          $ref: '#/definitions/dto.CreateOrgDTO'
       produces:
       - application/json
       responses:
@@ -1099,7 +1114,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/org.updateDTO'
+          $ref: '#/definitions/dto.UpdateOrgDTO'
       produces:
       - application/json
       responses:
@@ -1198,7 +1213,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.CreateProductDTO'
+          $ref: '#/definitions/dto.CreateProductDTO'
       produces:
       - application/json
       responses:
@@ -1303,7 +1318,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.UpdateProductDTO'
+          $ref: '#/definitions/dto.UpdateProductDTO'
       produces:
       - application/json
       responses:
@@ -1415,7 +1430,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.CreateVariantDTO'
+          $ref: '#/definitions/dto.CreateVariantDTO'
       produces:
       - application/json
       responses:
@@ -1461,7 +1476,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/product.UpdateVariantDTO'
+          $ref: '#/definitions/dto.UpdateVariantDTO'
       produces:
       - application/json
       responses:
