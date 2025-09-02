@@ -346,7 +346,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/org.createDTO"
+                            "$ref": "#/definitions/dto.CreateOrgDTO"
                         }
                     }
                 ],
@@ -454,7 +454,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/org.updateDTO"
+                            "$ref": "#/definitions/dto.UpdateOrgDTO"
                         }
                     }
                 ],
@@ -655,7 +655,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.CreateProductDTO"
+                            "$ref": "#/definitions/dto.CreateProductDTO"
                         }
                     }
                 ],
@@ -819,7 +819,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.UpdateProductDTO"
+                            "$ref": "#/definitions/dto.UpdateProductDTO"
                         }
                     }
                 ],
@@ -993,7 +993,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.CreateVariantDTO"
+                            "$ref": "#/definitions/dto.CreateVariantDTO"
                         }
                     }
                 ],
@@ -1064,7 +1064,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.UpdateVariantDTO"
+                            "$ref": "#/definitions/dto.UpdateVariantDTO"
                         }
                     }
                 ],
@@ -1218,6 +1218,94 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AddressOptional": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address of the organization\nRequired: false",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 5,
+                    "example": "123 Market Street"
+                },
+                "city": {
+                    "description": "City where the organization is located\nRequired: false",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "San Francisco"
+                },
+                "country": {
+                    "description": "Country where the organization is registered\nRequired: false",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "USA"
+                },
+                "state": {
+                    "description": "State where the organization is located\nRequired: false",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "California"
+                },
+                "zip": {
+                    "description": "Zip where the organization is located\nRequired: false",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "02912"
+                }
+            }
+        },
+        "dto.AddressRequired": {
+            "description": "Address",
+            "type": "object",
+            "required": [
+                "address",
+                "city",
+                "country",
+                "state",
+                "zip"
+            ],
+            "properties": {
+                "address": {
+                    "description": "Address of the organization\nRequired: true",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 5,
+                    "example": "123 Market Street"
+                },
+                "city": {
+                    "description": "City where the organization is located\nRequired: true",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "San Francisco"
+                },
+                "country": {
+                    "description": "Country where the organization is registered\nRequired: true",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "USA"
+                },
+                "state": {
+                    "description": "State where the organization is located\nRequired: true",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "California"
+                },
+                "zip": {
+                    "description": "Zip where the organization is located\nRequired: true",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2,
+                    "example": "02912"
+                }
+            }
+        },
         "dto.CreateDeliveryInfoDTO": {
             "type": "object",
             "required": [
@@ -1305,6 +1393,154 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateOrgDTO": {
+            "description": "Organization creation request",
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "organizationName",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/dto.AddressRequired"
+                },
+                "email": {
+                    "description": "Contact email\nRequired: true",
+                    "type": "string",
+                    "example": "contact@openb2b.io"
+                },
+                "logo": {
+                    "description": "Logo URL of the organization\nRequired: false",
+                    "type": "string",
+                    "example": "https://example.com/logo.png"
+                },
+                "name": {
+                    "description": "Name of the organization (short name / brand)\nRequired: true\nMin length: 3\nMax length: 50",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3,
+                    "example": "OpenB2B"
+                },
+                "organizationName": {
+                    "description": "Full legal organization name\nRequired: true",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3,
+                    "example": "OpenB2B Technologies Inc."
+                },
+                "organizationUrl": {
+                    "description": "Official website URL\nRequired: false",
+                    "type": "string",
+                    "example": "https://openb2b.io"
+                },
+                "phone": {
+                    "description": "Contact phone\nRequired: true",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 10,
+                    "example": "+1-202-555-0199"
+                }
+            }
+        },
+        "dto.CreateProductDTO": {
+            "type": "object",
+            "required": [
+                "name",
+                "variants"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "minLength": 2
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "variants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateProductVariantDTO"
+                    }
+                }
+            }
+        },
+        "dto.CreateProductVariantDTO": {
+            "type": "object",
+            "required": [
+                "price",
+                "sku",
+                "stock"
+            ],
+            "properties": {
+                "color": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 1
+                },
+                "price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 1
+                },
+                "sku": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "stock": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.CreateVariantDTO": {
+            "type": "object",
+            "required": [
+                "price",
+                "sku",
+                "stock"
+            ],
+            "properties": {
+                "color": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 1
+                },
+                "price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 1
+                },
+                "sku": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "stock": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
         "dto.UpdateDeliveryInfoDTO": {
             "type": "object",
             "properties": {
@@ -1370,6 +1606,101 @@ const docTemplate = `{
                 },
                 "tax": {
                     "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.UpdateOrgDTO": {
+            "description": "Organization update request",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address of the organization",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.AddressOptional"
+                        }
+                    ]
+                },
+                "email": {
+                    "description": "Contact email",
+                    "type": "string",
+                    "example": "contact@openb2b.io"
+                },
+                "logo": {
+                    "description": "Logo URL of the organization",
+                    "type": "string",
+                    "example": "https://example.com/logo.png"
+                },
+                "name": {
+                    "description": "Name of the organization",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3,
+                    "example": "OpenB2B"
+                },
+                "organizationName": {
+                    "description": "Full legal organization name",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3,
+                    "example": "OpenB2B Technologies Inc."
+                },
+                "organizationUrl": {
+                    "description": "Official website URL",
+                    "type": "string",
+                    "example": "https://openb2b.io"
+                },
+                "phone": {
+                    "description": "Contact phone",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 10,
+                    "example": "+1-202-555-0199"
+                }
+            }
+        },
+        "dto.UpdateProductDTO": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "minLength": 2
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                }
+            }
+        },
+        "dto.UpdateVariantDTO": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 1
+                },
+                "price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 1
+                },
+                "stock": {
+                    "type": "integer",
                     "minimum": 0
                 }
             }
@@ -1513,6 +1844,10 @@ const docTemplate = `{
         "model.Order": {
             "type": "object",
             "properties": {
+                "appliedDiscount": {
+                    "description": "Actual discount applied",
+                    "type": "number"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1527,10 +1862,6 @@ const docTemplate = `{
                 },
                 "discount": {
                     "$ref": "#/definitions/model.DiscountInfo"
-                },
-                "discountAmount": {
-                    "description": "Actual discount applied",
-                    "type": "number"
                 },
                 "id": {
                     "type": "integer"
@@ -1867,190 +2198,6 @@ const docTemplate = `{
                 }
             }
         },
-        "org.Address": {
-            "description": "Address",
-            "type": "object",
-            "required": [
-                "address",
-                "city",
-                "country",
-                "state",
-                "zip"
-            ],
-            "properties": {
-                "address": {
-                    "description": "Address of the organization\nRequired: true",
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 5,
-                    "example": "123 Market Street"
-                },
-                "city": {
-                    "description": "City where the organization is located\nRequired: true",
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "San Francisco"
-                },
-                "country": {
-                    "description": "Country where the organization is registered\nRequired: true",
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2,
-                    "example": "USA"
-                },
-                "state": {
-                    "description": "State where the organization is located\nRequired: true",
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "California"
-                },
-                "zip": {
-                    "description": "Zip where the organization is located\nRequired: true",
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "02912"
-                }
-            }
-        },
-        "org.UpdateAddressDTO": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 5,
-                    "example": "123 Market Street"
-                },
-                "city": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "San Francisco"
-                },
-                "country": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2,
-                    "example": "USA"
-                },
-                "state": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "California"
-                },
-                "zip": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 2,
-                    "example": "02912"
-                }
-            }
-        },
-        "org.createDTO": {
-            "description": "Organization creation request",
-            "type": "object",
-            "required": [
-                "email",
-                "name",
-                "organizationName",
-                "phone"
-            ],
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/org.Address"
-                },
-                "email": {
-                    "description": "Contact email\nRequired: true",
-                    "type": "string",
-                    "example": "contact@openb2b.io"
-                },
-                "logo": {
-                    "description": "Logo URL of the organization\nRequired: false",
-                    "type": "string",
-                    "example": "https://example.com/logo.png"
-                },
-                "name": {
-                    "description": "Name of the organization (short name / brand)\nRequired: true\nMin length: 3\nMax length: 50",
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3,
-                    "example": "OpenB2B"
-                },
-                "organizationName": {
-                    "description": "Full legal organization name\nRequired: true",
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3,
-                    "example": "OpenB2B Technologies Inc."
-                },
-                "organizationUrl": {
-                    "description": "Official website URL\nRequired: false",
-                    "type": "string",
-                    "example": "https://openb2b.io"
-                },
-                "phone": {
-                    "description": "Contact phone\nRequired: true",
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 10,
-                    "example": "+1-202-555-0199"
-                }
-            }
-        },
-        "org.updateDTO": {
-            "description": "Organization update request",
-            "type": "object",
-            "properties": {
-                "address": {
-                    "description": "Address of the organization",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/org.UpdateAddressDTO"
-                        }
-                    ]
-                },
-                "email": {
-                    "description": "Contact email",
-                    "type": "string",
-                    "example": "contact@openb2b.io"
-                },
-                "logo": {
-                    "description": "Logo URL of the organization",
-                    "type": "string",
-                    "example": "https://example.com/logo.png"
-                },
-                "name": {
-                    "description": "Name of the organization",
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3,
-                    "example": "OpenB2B"
-                },
-                "organizationName": {
-                    "description": "Full legal organization name",
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3,
-                    "example": "OpenB2B Technologies Inc."
-                },
-                "organizationUrl": {
-                    "description": "Official website URL",
-                    "type": "string",
-                    "example": "https://openb2b.io"
-                },
-                "phone": {
-                    "description": "Contact phone",
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 10,
-                    "example": "+1-202-555-0199"
-                }
-            }
-        },
         "product.APIResponseProduct": {
             "type": "object",
             "properties": {
@@ -2076,148 +2223,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "product.CreateProductDTO": {
-            "type": "object",
-            "required": [
-                "name",
-                "variants"
-            ],
-            "properties": {
-                "category": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 2
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 1000,
-                    "minLength": 2
-                },
-                "imageUrl": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                },
-                "variants": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/product.CreateProductVariantDTO"
-                    }
-                }
-            }
-        },
-        "product.CreateProductVariantDTO": {
-            "type": "object",
-            "required": [
-                "price",
-                "sku",
-                "stock"
-            ],
-            "properties": {
-                "color": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "price": {
-                    "type": "number"
-                },
-                "size": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "sku": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 2
-                },
-                "stock": {
-                    "type": "integer",
-                    "minimum": 0
-                }
-            }
-        },
-        "product.CreateVariantDTO": {
-            "type": "object",
-            "required": [
-                "price",
-                "sku",
-                "stock"
-            ],
-            "properties": {
-                "color": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "price": {
-                    "type": "number"
-                },
-                "size": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "sku": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 2
-                },
-                "stock": {
-                    "type": "integer",
-                    "minimum": 0
-                }
-            }
-        },
-        "product.UpdateProductDTO": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 2
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 1000,
-                    "minLength": 2
-                },
-                "imageUrl": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                }
-            }
-        },
-        "product.UpdateVariantDTO": {
-            "type": "object",
-            "properties": {
-                "color": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "price": {
-                    "type": "number"
-                },
-                "size": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "stock": {
-                    "type": "integer",
-                    "minimum": 0
                 }
             }
         },
