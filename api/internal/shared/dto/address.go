@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/deveasyclick/openb2b/internal/model"
+
 // Address represents the address of the organization
 // @Description Address
 type AddressRequired struct {
@@ -44,4 +46,60 @@ type AddressOptional struct {
 	// Zip where the organization is located
 	// Required: false
 	Zip string `json:"zip" validate:"omitempty,min=2,max=30" example:"02912"`
+}
+
+func (a *AddressOptional) ToModel() *model.Address {
+	return &model.Address{
+		Address: a.Address,
+		City:    a.City,
+		State:   a.State,
+		Country: a.Country,
+		Zip:     a.Zip,
+	}
+}
+
+func (a *AddressOptional) ApplyModel(address *model.Address) {
+	if a.Address != "" {
+		address.Address = a.Address
+	}
+	if a.City != "" {
+		address.City = a.City
+	}
+	if a.State != "" {
+		address.State = a.State
+	}
+	if a.Country != "" {
+		address.Country = a.Country
+	}
+	if a.Zip != "" {
+		address.Zip = a.Zip
+	}
+}
+
+func (a *AddressRequired) ToModel() *model.Address {
+	return &model.Address{
+		Address: a.Address,
+		City:    a.City,
+		State:   a.State,
+		Country: a.Country,
+		Zip:     a.Zip,
+	}
+}
+
+func (a *AddressRequired) ApplyModel(address *model.Address) {
+	if a.Address != "" {
+		address.Address = a.Address
+	}
+	if a.City != "" {
+		address.City = a.City
+	}
+	if a.State != "" {
+		address.State = a.State
+	}
+	if a.Country != "" {
+		address.Country = a.Country
+	}
+	if a.Zip != "" {
+		address.Zip = a.Zip
+	}
 }

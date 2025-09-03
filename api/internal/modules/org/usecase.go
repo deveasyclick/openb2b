@@ -34,7 +34,7 @@ func NewCreateUseCase(
 }
 
 func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgInput) *apperrors.APIError {
-	txErr := uc.appCtx.DB.Transaction(func(tx *gorm.DB) error {
+	txErr := uc.appCtx.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
 		// Wrap services with transactional repos
 		orgServiceTx := uc.orgService.WithTx(tx)

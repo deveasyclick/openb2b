@@ -12,6 +12,8 @@ const (
 	ErrUpdateCustomer   = "error updating customer"
 	ErrDeleteCustomer   = "error deleting customer"
 	ErrFindCustomer     = "error finding customer"
+	ErrCreateCustomer   = "error creating customer"
+	ErrFilterCustomer   = "error filtering customers"
 
 	// Org
 	ErrOrgNotFound      = "org not found"

@@ -34,7 +34,13 @@ func TestOrderHandlers(t *testing.T) {
 				{VariantID: seed.Product.Variants[1].ID, Quantity: 3},
 			},
 			Delivery: dto.CreateDeliveryInfoDTO{
-				Address:       &model.Address{Address: "Street 1", City: "City 1", State: "State 1", Country: "Country 1"},
+				Address: dto.AddressRequired{
+					Address: "Street 1",
+					City:    "City 1",
+					State:   "State 1",
+					Country: "Country 1",
+					Zip:     "02912",
+				},
 				TransportFare: 10.0,
 			},
 			Notes: "Notes",
@@ -45,18 +51,13 @@ func TestOrderHandlers(t *testing.T) {
 		}
 		body, _ := json.Marshal(reqBody)
 		resp, err := http.Post(ts.URL+"/api/v1/orders", "application/json", bytes.NewBuffer(body))
-		if err != nil {
-			t.Fatal(err)
-		}
 		assert.NoError(t, err)
 		defer resp.Body.Close()
+
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
 		var order response.APIResponse[model.Order]
 		err = json.NewDecoder(resp.Body).Decode(&order)
-		if err != nil {
-			t.Fatal(err)
-		}
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, order.Code)
 		assert.Equal(t, order.Message, "success")
@@ -88,7 +89,13 @@ func TestOrderHandlers(t *testing.T) {
 				{VariantID: 99, Quantity: 1},
 			},
 			Delivery: dto.CreateDeliveryInfoDTO{
-				Address:       &model.Address{Address: "Street 1", City: "City 1", State: "State 1", Country: "Country 1"},
+				Address: dto.AddressRequired{
+					Address: "Street 1",
+					City:    "City 1",
+					State:   "State 1",
+					Country: "Country 1",
+					Zip:     "02912",
+				},
 				TransportFare: 10.0,
 			},
 			Notes: "Notes",
@@ -99,18 +106,12 @@ func TestOrderHandlers(t *testing.T) {
 		}
 		body, _ := json.Marshal(reqBody)
 		resp, err := http.Post(ts.URL+"/api/v1/orders", "application/json", bytes.NewBuffer(body))
-		if err != nil {
-			t.Fatal(err)
-		}
 		assert.NoError(t, err)
 		defer resp.Body.Close()
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
 		var order response.APIResponse[model.Order]
 		err = json.NewDecoder(resp.Body).Decode(&order)
-		if err != nil {
-			t.Fatal(err)
-		}
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, order.Code)
 		assert.Equal(t, order.Message, "success")
@@ -140,6 +141,8 @@ func TestOrderHandlers(t *testing.T) {
 		body, _ := json.Marshal(reqBody)
 		resp, err := http.Post(ts.URL+"/api/v1/orders", "application/json", bytes.NewBuffer(body))
 		assert.NoError(t, err)
+		defer resp.Body.Close()
+
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
@@ -147,18 +150,23 @@ func TestOrderHandlers(t *testing.T) {
 	t.Run("Get order - success", func(t *testing.T) {
 		resp, err := http.Get(ts.URL + "/api/v1/orders/1")
 		assert.NoError(t, err)
+
+		defer resp.Body.Close()
+
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
 	t.Run("Get order - not found (404)", func(t *testing.T) {
 		resp, err := http.Get(ts.URL + "/api/v1/orders/999")
 		assert.NoError(t, err)
+		defer resp.Body.Close()
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 
 	t.Run("Get order - invalid ID (400)", func(t *testing.T) {
 		resp, err := http.Get(ts.URL + "/api/v1/orders/abc")
 		assert.NoError(t, err)
+		defer resp.Body.Close()
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
@@ -240,6 +248,7 @@ func TestOrderHandlers(t *testing.T) {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
+		defer resp.Body.Close()
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
@@ -268,6 +277,7 @@ func TestOrderHandlers(t *testing.T) {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
+		defer resp.Body.Close()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
@@ -276,6 +286,7 @@ func TestOrderHandlers(t *testing.T) {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
+		defer resp.Body.Close()
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 
@@ -284,6 +295,7 @@ func TestOrderHandlers(t *testing.T) {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
+		defer resp.Body.Close()
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 }

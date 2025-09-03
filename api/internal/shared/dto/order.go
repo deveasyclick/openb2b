@@ -30,13 +30,13 @@ func (i *CreateOrderItemDTO) ToModel(orgID uint, variant model.Variant) model.Or
 }
 
 type CreateDeliveryInfoDTO struct {
-	Address       *model.Address `json:"address" validate:"required"`
-	TransportFare float64        `json:"transportFare" validate:"min=0"`
+	Address       AddressRequired `json:"address" validate:"required"`
+	TransportFare float64         `json:"transportFare" validate:"min=0"`
 }
 
 func (d *CreateDeliveryInfoDTO) ToModel() model.DeliveryInfo {
 	return model.DeliveryInfo{
-		Address:       d.Address,
+		Address:       d.Address.ToModel(),
 		TransportFare: d.TransportFare,
 	}
 }
@@ -74,8 +74,13 @@ func (dto *CreateOrderDTO) ToModel(variantMap map[uint]model.Variant, orgID uint
 		Status:      model.OrderStatusPending,
 	}
 
+	order.Items = make([]model.OrderItem, 0, len(dto.Items)) // empty items to prevent duplicates
 	for _, item := range dto.Items {
-		v := variantMap[item.VariantID]
+		v, ok := variantMap[item.VariantID]
+		if !ok {
+			continue
+		}
+
 		order.Items = append(order.Items, model.OrderItem{
 			VariantID: v.ID,
 			ProductID: v.ProductID,
