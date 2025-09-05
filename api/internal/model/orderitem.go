@@ -12,6 +12,14 @@ type OrderItem struct {
 
 	Quantity  int     `json:"quantity"`
 	UnitPrice float64 `json:"unitPrice"`
-	Total     float64 `json:"total"`
+	Total     float64 `json:"total"` // (UnitPrice*Qty - discounts) + tax
 	OrgID     uint    `json:"orgId"`
+
+	TaxRate   float64 `json:"taxRate"`   // e.g., 0.10 for 10%
+	TaxAmount float64 `json:"taxAmount"` // tax charged on this line (after discounts)
+	Notes     string  `json:"notes"`
+
+	Discount             DiscountInfo `gorm:"embedded;embeddedPrefix:discount_" json:"discount"`
+	AppliedDiscount      float64      `json:"appliedDiscount"`      // Actual discount applied
+	AppliedOrderDiscount float64      `json:"appliedOrderDiscount"` // proportional share of order-level discount
 }

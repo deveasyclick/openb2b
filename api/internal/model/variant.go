@@ -11,4 +11,5 @@ type Variant struct {
 	Stock     int     `gorm:"not null" json:"stock"`
 	SKU       string  `gorm:"not null;uniqueIndex:idx_org_sku" json:"sku"`
 	OrgID     uint    `gorm:"not null;uniqueIndex:idx_org_sku" json:"orgId"` //needed for sku uniqueness per org
+	TaxRate   float64 `gorm:"not null" json:"taxRate"`
 }
