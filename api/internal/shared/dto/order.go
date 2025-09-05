@@ -4,29 +4,35 @@ import (
 	"time"
 
 	"github.com/deveasyclick/openb2b/internal/model"
-	generateordernumber "github.com/deveasyclick/openb2b/internal/utils/generateOrderNumber"
+	"github.com/deveasyclick/openb2b/internal/utils/numbergen"
+	"github.com/deveasyclick/openb2b/internal/utils/ordertotals"
 )
 
-//
-// CREATE DTOs
-//
-
+// CreateOrderItemDTO represents incoming data for creating an order item
 type CreateOrderItemDTO struct {
-	VariantID uint `json:"variantId" validate:"required"`
-	Quantity  int  `json:"quantity" validate:"required,min=1"`
+	VariantID uint                  `json:"variantId" validate:"required"`
+	Quantity  int                   `json:"quantity" validate:"required,min=1"`
+	Discount  CreateDiscountInfoDTO `json:"discount" validate:"omitempty"`
+	Notes     string                `json:"notes" validate:"omitempty"`
 }
 
+// ToModel converts CreateOrderItemDTO to a fully initialized OrderItem
+// Order items won'te be created separately, they are created when the order is created so we don't need to calculate totals at item level
 func (i *CreateOrderItemDTO) ToModel(orgID uint, variant model.Variant) model.OrderItem {
-	item := model.OrderItem{
-		VariantID: i.VariantID,
-		Quantity:  i.Quantity,
-		UnitPrice: variant.Price,
-		Total:     float64(i.Quantity) * variant.Price,
+
+	return model.OrderItem{
 		OrgID:     orgID,
 		ProductID: variant.ProductID,
+		VariantID: i.VariantID,
+		Notes:     i.Notes,
+		Quantity:  i.Quantity,
+		UnitPrice: variant.Price,
+		Discount: model.DiscountInfo{
+			Type:   i.Discount.Type,
+			Amount: i.Discount.Amount,
+		},
+		TaxRate: variant.TaxRate,
 	}
-
-	return item
 }
 
 type CreateDeliveryInfoDTO struct {
@@ -64,34 +70,30 @@ type CreateOrderDTO struct {
 
 func (dto *CreateOrderDTO) ToModel(variantMap map[uint]model.Variant, orgID uint) model.Order {
 	order := model.Order{
-		OrderNumber: generateordernumber.GenerateOrderNumber(),
+		OrderNumber: numbergen.Generate("ORD"),
 		CustomerID:  dto.CustomerID,
 		OrgID:       orgID,
 		Delivery:    dto.Delivery.ToModel(),
 		Notes:       dto.Notes,
 		Discount:    dto.Discount.ToModel(),
-		Tax:         dto.Tax,
 		Status:      model.OrderStatusPending,
+		Items:       make([]model.OrderItem, 0, len(dto.Items)),
 	}
 
-	order.Items = make([]model.OrderItem, 0, len(dto.Items)) // empty items to prevent duplicates
-	for _, item := range dto.Items {
-		v, ok := variantMap[item.VariantID]
+	// Convert each DTO item to OrderItem model
+	for _, itemDTO := range dto.Items {
+		variant, ok := variantMap[itemDTO.VariantID]
 		if !ok {
-			continue
+			continue // skip invalid variants
 		}
 
-		order.Items = append(order.Items, model.OrderItem{
-			VariantID: v.ID,
-			ProductID: v.ProductID,
-			UnitPrice: v.Price,
-			Quantity:  item.Quantity,
-			Total:     float64(item.Quantity) * v.Price,
-			OrgID:     orgID,
-		})
+		orderItem := itemDTO.ToModel(orgID, variant)
+		order.Items = append(order.Items, orderItem)
 	}
 
-	calculateTotals(&order)
+	// After items are added, calculate totals including applied order-level discount
+	ordertotals.Calculate(&order)
+
 	return order
 }
 
@@ -103,7 +105,6 @@ type UpdateOrderDTO struct {
 	Status     *model.OrderStatus     `json:"status" validate:"omitempty,oneof=pending approved delivered cancelled"`
 	Notes      *string                `json:"notes" validate:"omitempty,max=1000"`
 	Discount   *CreateDiscountInfoDTO `json:"discount" validate:"omitempty"`
-	Tax        *float64               `json:"tax" validate:"omitempty,min=0"`
 	Items      []*CreateOrderItemDTO  `json:"items" validate:"omitempty,dive"`
 	Delivery   *UpdateDeliveryInfoDTO `json:"deliver" validate:"omitempty"`
 	CustomerID *uint                  `json:"customerId" validate:"omitempty"`
@@ -118,10 +119,6 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order, variantMap *map[uint]m
 	}
 	if dto.Discount != nil {
 		order.Discount = dto.Discount.ToModel()
-	}
-
-	if dto.Tax != nil {
-		order.Tax = *dto.Tax
 	}
 
 	if dto.Delivery != nil {
@@ -139,25 +136,18 @@ func (dto *UpdateOrderDTO) ApplyModel(order *model.Order, variantMap *map[uint]m
 			if !ok {
 				continue // or handle error
 			}
-			order.Items = append(order.Items, model.OrderItem{
-				VariantID: v.ID,
-				ProductID: v.ProductID,
-				UnitPrice: v.Price,
-				Quantity:  item.Quantity,
-				Total:     float64(item.Quantity) * v.Price,
-				OrgID:     order.OrgID,
-			})
+			order.Items = append(order.Items, item.ToModel(order.OrgID, v))
 		}
 	}
 
-	calculateTotals(order)
+	ordertotals.Calculate(order)
 }
 
 type UpdateDeliveryInfoDTO struct {
 	Address       *model.Address        `json:"address" validate:"omitempty"`
 	TransportFare *float64              `json:"transportFare" validate:"omitempty,min=0"`
 	Status        *model.DeliveryStatus `json:"status" validate:"omitempty,oneof=pending shipped delivered cancelled"`
-	Date          *time.Time            `json:"date"`
+	Date          *time.Time            `json:"date" validate:"omitempty,datetime"`
 }
 
 func (dto *UpdateDeliveryInfoDTO) ApplyModel(delivery *model.DeliveryInfo) {
@@ -172,41 +162,5 @@ func (dto *UpdateDeliveryInfoDTO) ApplyModel(delivery *model.DeliveryInfo) {
 	}
 	if dto.Date != nil {
 		delivery.Date = dto.Date
-	}
-}
-
-// Calculate totals
-func calculateTotals(order *model.Order) {
-	// Calculate subtotal
-	subtotal := 0.0
-	for _, item := range order.Items {
-		subtotal += item.Total
-	}
-	order.Subtotal = subtotal
-
-	// Calculate discount
-	appliedDiscount := 0.0
-	discount := order.Discount
-	switch discount.Type {
-	case model.DiscountPercentage:
-		appliedDiscount = subtotal * (discount.Amount / 100)
-	case model.DiscountFixed:
-		appliedDiscount = discount.Amount
-	default:
-		appliedDiscount = 0 // fallback, in case of unknown type
-	}
-	order.AppliedDiscount = appliedDiscount
-
-	// Calculate tax
-	taxAmount := 0.0
-	if order.Tax > 0 {
-		taxAmount = (subtotal - appliedDiscount) * (order.Tax / 100)
-	}
-	order.TaxAmount = taxAmount
-
-	// Final total
-	order.Total = subtotal - appliedDiscount + taxAmount
-	if order.Total < 0 {
-		order.Total = 0
 	}
 }
