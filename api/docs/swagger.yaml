@@ -169,6 +169,15 @@ definitions:
     required:
     - type
     type: object
+  dto.CreateInvoiceDTO:
+    properties:
+      notes:
+        type: string
+      orderId:
+        type: integer
+    required:
+    - orderId
+    type: object
   dto.CreateOrderDTO:
     properties:
       customerId:
@@ -346,6 +355,22 @@ definitions:
         minimum: 0
         type: number
     type: object
+  dto.UpdateInvoiceDTO:
+    properties:
+      dueDate:
+        description: Allow optional update of DueDate
+        type: string
+      notes:
+        type: string
+      status:
+        enum:
+        - draft
+        - issued
+        - paid
+        - partially_paid
+        - cancelled
+        type: string
+    type: object
   dto.UpdateOrderDTO:
     properties:
       customerId:
@@ -445,6 +470,15 @@ definitions:
         minimum: 0
         type: number
     type: object
+  invoice.APIResponseInvoice:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/model.Invoice'
+      message:
+        type: string
+    type: object
   model.Address:
     properties:
       address:
@@ -536,23 +570,93 @@ definitions:
     properties:
       created_at:
         type: string
+      currency:
+        type: string
+      discountTotal:
+        type: number
+      dueDate:
+        type: string
       id:
         type: integer
       invoiceNumber:
+        type: string
+      issuedAt:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/model.InvoiceItem'
+        type: array
+      notes:
         type: string
       order:
         $ref: '#/definitions/model.Order'
       orderId:
         type: integer
-      org:
-        $ref: '#/definitions/model.Org'
       orgId:
         type: integer
-      pdfPath:
+      pdf_url:
         type: string
+      status:
+        $ref: '#/definitions/model.InvoiceStatus'
+      subtotal:
+        type: number
+      taxTotal:
+        type: number
+      total:
+        type: number
       updated_at:
         type: string
     type: object
+  model.InvoiceItem:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      invoiceID:
+        description: Link to invoice
+        type: integer
+      lineTotal:
+        description: Quantity * UnitPrice + TaxAmount
+        type: number
+      org:
+        $ref: '#/definitions/model.Org'
+      orgID:
+        type: integer
+      quantity:
+        type: integer
+      subtotal:
+        description: Sum of all item totals before discount and tax
+        type: number
+      taxAmount:
+        type: number
+      unitPrice:
+        type: number
+      updated_at:
+        type: string
+      variant:
+        $ref: '#/definitions/model.Variant'
+      variantID:
+        type: integer
+    type: object
+  model.InvoiceStatus:
+    enum:
+    - draft
+    - issued
+    - paid
+    - overdue
+    - cancelled
+    - partially_paid
+    type: string
+    x-enum-varnames:
+    - InvoiceStatusDraft
+    - InvoiceStatusIssued
+    - InvoiceStatusPaid
+    - InvoiceStatusOverdue
+    - InvoiceStatusCancelled
+    - InvoiceStatusPartiallyPaid
   model.Order:
     properties:
       appliedDiscount:
@@ -1085,6 +1189,202 @@ paths:
       summary: Update customer
       tags:
       - customers
+  /invoices:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of invoices. Supports filtering, sorting,
+        searching, and preloading.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by field, e.g. 'created_at desc'
+        in: query
+        name: sort
+        type: string
+      - description: Comma-separated list of relations to preload. relation must start
+          with uppercase. e.g. 'Orders,Org'
+        in: query
+        name: preloads
+        type: string
+      - description: Comma-separated list of fields to search (must be allowed)
+        in: query
+        name: search_fields
+        type: string
+      - description: Filter by order number
+        in: query
+        name: order_number
+        type: string
+      - description: Filter by notes
+        in: query
+        name: notes
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invoice.APIResponseInvoice'
+        "400":
+          description: Invalid filter parameters
+          schema:
+            $ref: '#/definitions/apperrors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperrors.APIError'
+      security:
+      - BearerAuth: []
+      summary: List invoices with filtering and pagination
+      tags:
+      - invoices
+    post:
+      consumes:
+      - application/json
+      description: Create a new invoice
+      parameters:
+      - description: Invoice payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInvoiceDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invoice.APIResponseInvoice'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create invoices
+      tags:
+      - invoices
+  /invoices/{id}:
+    delete:
+      description: Delete a invoice by ID
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete invoice
+      tags:
+      - invoices
+    get:
+      description: Get a invoice by ID
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invoice.APIResponseInvoice'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get invoice
+      tags:
+      - invoices
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing invoice by ID
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update invoice payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateInvoiceDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invoice.APIResponseInvoice'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update invoice
+      tags:
+      - invoices
   /orders:
     get:
       consumes:
