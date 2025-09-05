@@ -65,7 +65,6 @@ type CreateOrderDTO struct {
 	Delivery   CreateDeliveryInfoDTO `json:"delivery" validate:"required"`
 	Notes      string                `json:"notes" validate:"omitempty,max=1000"`
 	Discount   CreateDiscountInfoDTO `json:"discount" validate:"omitempty"`
-	Tax        float64               `json:"tax" validate:"min=0"`
 }
 
 func (dto *CreateOrderDTO) ToModel(variantMap map[uint]model.Variant, orgID uint) model.Order {
