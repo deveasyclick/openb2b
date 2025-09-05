@@ -50,19 +50,24 @@ func (o *Order) BeforeSave(tx *gorm.DB) (err error) {
 type Order struct {
 	BaseModel
 
-	OrderNumber     string       `gorm:"uniqueIndex;size:50" json:"orderNumber"`
-	CustomerID      uint         `gorm:"index;not null" json:"customerId"`
-	Customer        *Customer    `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Status          OrderStatus  `gorm:"type:varchar(20);default:'pending';check:status IN ('pending','processing','shipped','completed')" json:"status"`
-	OrgID           uint         `gorm:"index" json:"orgId"`
-	Org             *Org         `gorm:"foreignKey:OrgID" json:"org"`
-	Items           []OrderItem  `gorm:"foreignKey:OrderID" json:"items"`
-	Delivery        DeliveryInfo `gorm:"embedded;embeddedPrefix:delivery_" json:"delivery"`
-	Notes           string       `json:"notes"`
-	Discount        DiscountInfo `gorm:"embedded;embeddedPrefix:discount_" json:"discount"`
-	Total           float64      `json:"total"`           // Final total after discount and tax
-	Tax             float64      `json:"tax"`             // Tax percentage
-	Subtotal        float64      `json:"subtotal"`        // Sum of all item totals before discount and tax
-	AppliedDiscount float64      `json:"appliedDiscount"` // Actual discount applied
-	TaxAmount       float64      `json:"taxAmount"`       // Tax amount
+	OrderNumber string       `gorm:"uniqueIndex;size:50" json:"orderNumber"`
+	CustomerID  uint         `gorm:"index;not null" json:"customerId"`
+	Customer    *Customer    `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Status      OrderStatus  `gorm:"type:varchar(20);default:'pending';check:status IN ('pending','processing','shipped','completed')" json:"status"`
+	OrgID       uint         `gorm:"index" json:"orgId"`
+	Org         *Org         `gorm:"foreignKey:OrgID" json:"org"`
+	Items       []OrderItem  `gorm:"foreignKey:OrderID" json:"items"`
+	Delivery    DeliveryInfo `gorm:"embedded;embeddedPrefix:delivery_" json:"delivery"`
+	Notes       string       `json:"notes"`
+
+	Discount          DiscountInfo `gorm:"embedded;embeddedPrefix:discount_" json:"discount"`
+	AppliedDiscount   float64      `json:"appliedDiscount"` // Actual discount applied
+	DiscountTotal     float64      `json:"discountTotal"`   /// ItemDiscountTotal + AppliedDiscount
+	ItemDiscountTotal float64      // sum of all per-item discounts
+
+	Total    float64 `json:"total"`     // final payable amount = sum of all item totals
+	Subtotal float64 `json:"subtotal"`  // sum of item (unitPrice * qty), before discounts & tax
+	TaxTotal float64 `json:"taxAmount"` // Sum of all item tax amounts
+
+	Invoices []Invoice `gorm:"foreignKey:OrderID" json:"invoices"`
 }

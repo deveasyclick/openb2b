@@ -2,13 +2,25 @@ package dto
 
 import "github.com/deveasyclick/openb2b/internal/model"
 
-// TODO: move to dto package
 type CreateProductVariantDTO struct {
-	SKU   string  `json:"sku" validate:"required,min=2,max=50"`
-	Color string  `json:"color" validate:"omitempty,min=1,max=30"`
-	Size  string  `json:"size" validate:"omitempty,min=1,max=30"`
-	Price float64 `json:"price" validate:"required,gt=0"`
-	Stock int     `json:"stock" validate:"required,min=0"`
+	SKU     string  `json:"sku" validate:"required,min=2,max=50"`
+	Color   string  `json:"color" validate:"omitempty,min=1,max=30"`
+	Size    string  `json:"size" validate:"omitempty,min=1,max=30"`
+	Price   float64 `json:"price" validate:"required,gt=0"`
+	Stock   int     `json:"stock" validate:"required,min=0"`
+	TaxRate float64 `json:"taxRate" validate:"omitempty,min=0,max=1"`
+}
+
+func (v *CreateProductVariantDTO) ToModel(orgID uint) model.Variant {
+	return model.Variant{
+		SKU:     v.SKU,
+		Color:   v.Color,
+		Size:    v.Size,
+		Price:   v.Price,
+		Stock:   v.Stock,
+		TaxRate: v.TaxRate,
+		OrgID:   orgID,
+	}
 }
 
 type CreateProductDTO struct {
@@ -30,14 +42,7 @@ func (p *CreateProductDTO) ToModel(orgID uint) model.Product {
 
 	// map variants
 	for _, v := range p.Variants {
-		product.Variants = append(product.Variants, model.Variant{
-			SKU:   v.SKU,
-			Color: v.Color,
-			Size:  v.Size,
-			Price: v.Price,
-			Stock: v.Stock,
-			OrgID: orgID, // enforce same org
-		})
+		product.Variants = append(product.Variants, v.ToModel(orgID))
 	}
 
 	return product
@@ -67,30 +72,12 @@ func (dto *UpdateProductDTO) ApplyModel(product *model.Product) {
 	}
 }
 
-// Variants
-type CreateVariantDTO struct {
-	SKU   string  `json:"sku" validate:"required,min=2,max=50"`
-	Color string  `json:"color" validate:"omitempty,min=1,max=30"`
-	Size  string  `json:"size" validate:"omitempty,min=1,max=30"`
-	Price float64 `json:"price" validate:"required,gt=0"`
-	Stock int     `json:"stock" validate:"required,min=0"`
-}
-
-func (v *CreateVariantDTO) ToModel() model.Variant {
-	return model.Variant{
-		SKU:   v.SKU,
-		Color: v.Color,
-		Size:  v.Size,
-		Price: v.Price,
-		Stock: v.Stock,
-	}
-}
-
 type UpdateVariantDTO struct {
-	Color *string  `json:"color" validate:"omitempty,min=1,max=30"`
-	Size  *string  `json:"size" validate:"omitempty,min=1,max=30"`
-	Price *float64 `json:"price" validate:"omitempty,gt=0"`
-	Stock *int     `json:"stock" validate:"omitempty,min=0"`
+	Color   *string  `json:"color" validate:"omitempty,min=1,max=30"`
+	Size    *string  `json:"size" validate:"omitempty,min=1,max=30"`
+	Price   *float64 `json:"price" validate:"omitempty,gt=0"`
+	Stock   *int     `json:"stock" validate:"omitempty,min=0"`
+	TaxRate *float64 `json:"taxRate" validate:"omitempty,min=0,max=1"`
 }
 
 func (dto *UpdateVariantDTO) ApplyModel(variant *model.Variant) {
@@ -105,5 +92,9 @@ func (dto *UpdateVariantDTO) ApplyModel(variant *model.Variant) {
 	}
 	if dto.Stock != nil {
 		variant.Stock = *dto.Stock
+	}
+
+	if dto.TaxRate != nil {
+		variant.TaxRate = *dto.TaxRate
 	}
 }

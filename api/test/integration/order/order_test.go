@@ -24,14 +24,14 @@ func TestOrderHandlers(t *testing.T) {
 	seed.InsertOrders(db)
 
 	seed.ClearProducts(db)
-	seed.InsertProducts(db)
+	product := seed.InsertProducts(db)
 	// -------------------- CREATE ORDER --------------------
 	t.Run("Create order - success", func(t *testing.T) {
 		reqBody := dto.CreateOrderDTO{
 			CustomerID: 1,
 			Items: []dto.CreateOrderItemDTO{
-				{VariantID: seed.Product.Variants[0].ID, Quantity: 1},
-				{VariantID: seed.Product.Variants[1].ID, Quantity: 3},
+				{VariantID: product.Variants[0].ID, Quantity: 1},
+				{VariantID: product.Variants[1].ID, Quantity: 3},
 			},
 			Delivery: dto.CreateDeliveryInfoDTO{
 				Address: dto.AddressRequired{
@@ -62,24 +62,35 @@ func TestOrderHandlers(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, order.Code)
 		assert.Equal(t, order.Message, "success")
 
-		subtotal, discountAmount, taxAmount, total := calculateTotals(order.Data)
-		assert.Equal(t, order.Data.Total, total)
-		assert.Equal(t, order.Data.Subtotal, subtotal)
-		assert.Equal(t, order.Data.AppliedDiscount, discountAmount)
-		assert.Equal(t, order.Data.Tax, taxAmount)
 		assert.Equal(t, int(order.Data.CustomerID), 1)
-		assert.Equal(t, int(order.Data.Discount.Amount), 3)
-		assert.Equal(t, order.Data.Discount.Type, model.DiscountFixed)
+		assert.Equal(t, order.Data.Notes, "Notes")
+		// Order delivery
 		assert.Equal(t, float64(order.Data.Delivery.TransportFare), 10.0)
 		assert.Equal(t, order.Data.Delivery.Address.Address, "Street 1")
 		assert.Equal(t, order.Data.Delivery.Address.City, "City 1")
 		assert.Equal(t, order.Data.Delivery.Address.State, "State 1")
 		assert.Equal(t, order.Data.Delivery.Address.Country, "Country 1")
-		assert.Equal(t, order.Data.Notes, "Notes")
+		// Order totals
+		assert.Equal(t, int(order.Data.Discount.Amount), 3)
+		assert.Equal(t, order.Data.Discount.Type, model.DiscountFixed)
+		assert.Equal(t, order.Data.AppliedDiscount, float64(3))
+		// discount total = applied discount + sum of all item discounts
+		assert.Equal(t, order.Data.DiscountTotal, order.Data.AppliedDiscount+order.Data.Items[0].AppliedDiscount+order.Data.Items[1].AppliedDiscount)
+		// item discount total = sum of all item discounts
+		assert.Equal(t, order.Data.ItemDiscountTotal, order.Data.Items[0].AppliedDiscount+order.Data.Items[1].AppliedDiscount)
+		// order total = sum of all item totals
+		assert.Equal(t, order.Data.Total, order.Data.Items[0].Total+order.Data.Items[1].Total)
+		// sum of item (unitPrice * qty), before discounts & tax
+		subtotal := order.Data.Items[0].UnitPrice*float64(order.Data.Items[0].Quantity) + order.Data.Items[1].UnitPrice*float64(order.Data.Items[1].Quantity)
+		assert.Equal(t, order.Data.Subtotal, subtotal)
+		// order tax = sum of all item taxes
+		assert.Equal(t, order.Data.TaxTotal, order.Data.Items[0].TaxAmount+order.Data.Items[1].TaxAmount)
+
+		// Order items totals
 		assert.Equal(t, len(order.Data.Items), 2)
+		assert.Equal(t, int(order.Data.Items[0].VariantID), 100)
 		assert.Equal(t, order.Data.Items[0].Quantity, 1)
 		assert.Equal(t, order.Data.Items[0].UnitPrice, 10.0)
-		assert.Equal(t, int(order.Data.Items[0].VariantID), 100)
 	})
 
 	t.Run("Create order - (zero discount) success", func(t *testing.T) {
@@ -173,7 +184,18 @@ func TestOrderHandlers(t *testing.T) {
 	// -------------------- UPDATE PRODUCT --------------------
 
 	t.Run("Update order - (replace order items) success", func(t *testing.T) {
-		reqBody := map[string]any{"Notes": "This is a note", "Items": []map[string]any{{"Quantity": 3, "VariantId": seed.Product.Variants[0].ID}, {"Quantity": 3, "VariantId": seed.Product.Variants[1].ID}}}
+		note := "This is a note"
+		reqBody := dto.UpdateOrderDTO{
+			Notes: &note,
+			Items: []*dto.CreateOrderItemDTO{
+				{Quantity: 3, VariantID: product.Variants[0].ID},
+				{Quantity: 3, VariantID: product.Variants[1].ID},
+			},
+			Discount: &dto.CreateDiscountInfoDTO{
+				Type:   model.DiscountFixed,
+				Amount: 3,
+			},
+		}
 		body, _ := json.Marshal(reqBody)
 		req, _ := http.NewRequest(http.MethodPatch, ts.URL+"/api/v1/orders/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
@@ -192,15 +214,27 @@ func TestOrderHandlers(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, order.Data.Notes, "This is a note")
-
-		subtotal, discountAmount, taxAmount, total := calculateTotals(order.Data)
-		assert.Equal(t, order.Data.Total, total)
+		// Order totals
+		assert.Equal(t, int(order.Data.Discount.Amount), 3)
+		assert.Equal(t, order.Data.Discount.Type, model.DiscountFixed)
+		assert.Equal(t, order.Data.AppliedDiscount, float64(3))
+		// discount total = applied discount + sum of all item discounts
+		assert.Equal(t, order.Data.DiscountTotal, order.Data.AppliedDiscount+order.Data.Items[0].AppliedDiscount+order.Data.Items[1].AppliedDiscount)
+		// item discount total = sum of all item discounts
+		assert.Equal(t, order.Data.ItemDiscountTotal, order.Data.Items[0].AppliedDiscount+order.Data.Items[1].AppliedDiscount)
+		// order total = sum of all item totals
+		assert.Equal(t, order.Data.Total, order.Data.Items[0].Total+order.Data.Items[1].Total)
+		// sum of item (unitPrice * qty), before discounts & tax
+		subtotal := order.Data.Items[0].UnitPrice*float64(order.Data.Items[0].Quantity) + order.Data.Items[1].UnitPrice*float64(order.Data.Items[1].Quantity)
 		assert.Equal(t, order.Data.Subtotal, subtotal)
-		assert.Equal(t, order.Data.AppliedDiscount, discountAmount)
-		assert.Equal(t, order.Data.Tax, taxAmount)
+		// order tax = sum of all item taxes
+		assert.Equal(t, order.Data.TaxTotal, order.Data.Items[0].TaxAmount+order.Data.Items[1].TaxAmount)
+
+		// Order items totals
 		assert.Equal(t, len(order.Data.Items), 2)
+		assert.Equal(t, int(order.Data.Items[0].VariantID), 100)
 		assert.Equal(t, order.Data.Items[0].Quantity, 3)
-		assert.NotEqual(t, order.Data.Items[0].VariantID, 1)
+		assert.Equal(t, order.Data.Items[1].Quantity, 3)
 	})
 
 	t.Run("Update order - success", func(t *testing.T) {
@@ -228,7 +262,7 @@ func TestOrderHandlers(t *testing.T) {
 	})
 
 	t.Run("Update order - (duplicate order items) success", func(t *testing.T) {
-		reqBody := map[string]any{"Notes": "This is a note", "Items": []map[string]any{{"Quantity": 3, "VariantId": seed.Product.Variants[1].ID}, {"Quantity": 2, "VariantId": seed.Product.Variants[1].ID}}}
+		reqBody := map[string]any{"Notes": "This is a note", "Items": []map[string]any{{"Quantity": 3, "VariantId": product.Variants[1].ID}, {"Quantity": 2, "VariantId": product.Variants[1].ID}}}
 		body, _ := json.Marshal(reqBody)
 		req, _ := http.NewRequest(http.MethodPatch, ts.URL+"/api/v1/orders/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
