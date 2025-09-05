@@ -269,7 +269,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	var req dto.CreateVariantDTO
+	var req dto.CreateProductVariantDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
 		validator.WriteValidationResponse(w, errors)
 		return
@@ -282,8 +282,7 @@ func (h *ProductHandler) CreateVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert request to model
-	variant := req.ToModel()
-	variant.OrgID = userFromContext.Org
+	variant := req.ToModel(userFromContext.Org)
 	variant.ProductID = uint(productId)
 
 	// Check if variant already exists
@@ -344,6 +343,10 @@ func (h *ProductHandler) UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	// Get existing variant
 	existingVariant, err := h.service.FindVariantByID(ctx, uint(productId), uint(id))
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrVariantNotFound, h.appCtx.Logger)
+		}
+
 		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateVariant, h.appCtx.Logger)
 		return
 	}
