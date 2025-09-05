@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/dto"
+	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/test/integration/seed"
 	"github.com/deveasyclick/openb2b/test/integration/setup"
 	"github.com/stretchr/testify/assert"
@@ -31,6 +33,13 @@ func TestProductHandlers(t *testing.T) {
 		resp, err := http.Post(ts.URL+"/api/v1/products", "application/json", bytes.NewBuffer(body))
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+		var product response.APIResponse[model.Product]
+		err = json.NewDecoder(resp.Body).Decode(&product)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, product.Code)
+		assert.Equal(t, product.Message, "success")
+
 	})
 
 	t.Run("Create product - missing name (400)", func(t *testing.T) {
