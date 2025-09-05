@@ -184,9 +184,6 @@ definitions:
       notes:
         maxLength: 1000
         type: string
-      tax:
-        minimum: 0
-        type: number
     required:
     - customerId
     - delivery

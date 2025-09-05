@@ -1729,10 +1729,6 @@ const docTemplate = `{
                 "notes": {
                     "type": "string",
                     "maxLength": 1000
-                },
-                "tax": {
-                    "type": "number",
-                    "minimum": 0
                 }
             }
         },
