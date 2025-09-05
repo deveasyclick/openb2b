@@ -6,11 +6,19 @@ import "time"
 type InvoiceStatus string
 
 const (
-	InvoiceStatusDraft         InvoiceStatus = "draft"
-	InvoiceStatusIssued        InvoiceStatus = "issued"
-	InvoiceStatusPaid          InvoiceStatus = "paid"
-	InvoiceStatusOverdue       InvoiceStatus = "overdue"
-	InvoiceStatusCancelled     InvoiceStatus = "cancelled"
+	//draft, Internal, editable, not sent to customer.
+	InvoiceStatusDraft InvoiceStatus = "draft"
+	// pro_forma, Sent to customer for review (not a legal invoice).
+	InvoiceStatusProForma InvoiceStatus = "pro_forma"
+	// issued, Official invoice, data locked, triggers accounting.
+	InvoiceStatusIssued InvoiceStatus = "issued"
+	// paid, Fully paid, invoice closed.
+	InvoiceStatusPaid InvoiceStatus = "paid"
+	// overdue, Invoice overdue, customer has not paid.
+	InvoiceStatusOverdue InvoiceStatus = "overdue"
+	// cancelled, Invoice cancelled, customer has not paid.
+	InvoiceStatusCancelled InvoiceStatus = "cancelled"
+	// partially_paid, Invoice partially paid, customer has not paid.
 	InvoiceStatusPartiallyPaid InvoiceStatus = "partially_paid"
 )
 
