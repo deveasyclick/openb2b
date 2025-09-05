@@ -1308,7 +1308,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateVariantDTO"
+                            "$ref": "#/definitions/dto.CreateProductVariantDTO"
                         }
                     }
                 ],
@@ -1743,6 +1743,12 @@ const docTemplate = `{
                 "variantId"
             ],
             "properties": {
+                "discount": {
+                    "$ref": "#/definitions/dto.CreateDiscountInfoDTO"
+                },
+                "notes": {
+                    "type": "string"
+                },
                 "quantity": {
                     "type": "integer",
                     "minimum": 1
@@ -1865,37 +1871,10 @@ const docTemplate = `{
                 "stock": {
                     "type": "integer",
                     "minimum": 0
-                }
-            }
-        },
-        "dto.CreateVariantDTO": {
-            "type": "object",
-            "required": [
-                "price",
-                "sku",
-                "stock"
-            ],
-            "properties": {
-                "color": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
                 },
-                "price": {
-                    "type": "number"
-                },
-                "size": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 1
-                },
-                "sku": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 2
-                },
-                "stock": {
-                    "type": "integer",
+                "taxRate": {
+                    "type": "number",
+                    "maximum": 1,
                     "minimum": 0
                 }
             }
@@ -1986,10 +1965,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.OrderStatus"
                         }
                     ]
-                },
-                "tax": {
-                    "type": "number",
-                    "minimum": 0
                 }
             }
         },
@@ -2084,6 +2059,11 @@ const docTemplate = `{
                 },
                 "stock": {
                     "type": "integer",
+                    "minimum": 0
+                },
+                "taxRate": {
+                    "type": "number",
+                    "maximum": 1,
                     "minimum": 0
                 }
             }
@@ -2215,6 +2195,38 @@ const docTemplate = `{
                 "DiscountFixed"
             ]
         },
+        "model.Invoice": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoiceNumber": {
+                    "type": "string"
+                },
+                "order": {
+                    "$ref": "#/definitions/model.Order"
+                },
+                "orderId": {
+                    "type": "integer"
+                },
+                "org": {
+                    "$ref": "#/definitions/model.Org"
+                },
+                "orgId": {
+                    "type": "integer"
+                },
+                "pdfPath": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Order": {
             "type": "object",
             "properties": {
@@ -2237,8 +2249,23 @@ const docTemplate = `{
                 "discount": {
                     "$ref": "#/definitions/model.DiscountInfo"
                 },
+                "discountTotal": {
+                    "description": "/ ItemDiscountTotal + AppliedDiscount",
+                    "type": "number"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "invoices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Invoice"
+                    }
+                },
+                "itemDiscountTotal": {
+                    "description": "sum of all per-item discounts",
+                    "type": "number",
+                    "format": "float64"
                 },
                 "items": {
                     "type": "array",
@@ -2262,19 +2289,15 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.OrderStatus"
                 },
                 "subtotal": {
-                    "description": "Sum of all item totals before discount and tax",
-                    "type": "number"
-                },
-                "tax": {
-                    "description": "Tax percentage",
+                    "description": "sum of item (unitPrice * qty), before discounts \u0026 tax",
                     "type": "number"
                 },
                 "taxAmount": {
-                    "description": "Tax amount",
+                    "description": "Sum of all item tax amounts",
                     "type": "number"
                 },
                 "total": {
-                    "description": "Final total after discount and tax",
+                    "description": "final payable amount = sum of all item totals",
                     "type": "number"
                 },
                 "updated_at": {
@@ -2285,11 +2308,25 @@ const docTemplate = `{
         "model.OrderItem": {
             "type": "object",
             "properties": {
+                "appliedDiscount": {
+                    "description": "Actual discount applied",
+                    "type": "number"
+                },
+                "appliedOrderDiscount": {
+                    "description": "proportional share of order-level discount",
+                    "type": "number"
+                },
                 "created_at": {
                     "type": "string"
                 },
+                "discount": {
+                    "$ref": "#/definitions/model.DiscountInfo"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
                 },
                 "orderId": {
                     "type": "integer"
@@ -2306,7 +2343,16 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
+                "taxAmount": {
+                    "description": "tax charged on this line (after discounts)",
+                    "type": "number"
+                },
+                "taxRate": {
+                    "description": "e.g., 0.10 for 10%",
+                    "type": "number"
+                },
                 "total": {
+                    "description": "(UnitPrice*Qty - discounts) + tax",
                     "type": "number"
                 },
                 "unitPrice": {
@@ -2552,6 +2598,9 @@ const docTemplate = `{
                 },
                 "stock": {
                     "type": "integer"
+                },
+                "taxRate": {
+                    "type": "number"
                 },
                 "updated_at": {
                     "type": "string"

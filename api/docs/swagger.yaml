@@ -194,6 +194,10 @@ definitions:
     type: object
   dto.CreateOrderItemDTO:
     properties:
+      discount:
+        $ref: '#/definitions/dto.CreateDiscountInfoDTO'
+      notes:
+        type: string
       quantity:
         minimum: 1
         type: integer
@@ -301,30 +305,10 @@ definitions:
       stock:
         minimum: 0
         type: integer
-    required:
-    - price
-    - sku
-    - stock
-    type: object
-  dto.CreateVariantDTO:
-    properties:
-      color:
-        maxLength: 30
-        minLength: 1
-        type: string
-      price:
-        type: number
-      size:
-        maxLength: 30
-        minLength: 1
-        type: string
-      sku:
-        maxLength: 50
-        minLength: 2
-        type: string
-      stock:
+      taxRate:
+        maximum: 1
         minimum: 0
-        type: integer
+        type: number
     required:
     - price
     - sku
@@ -388,9 +372,6 @@ definitions:
         - approved
         - delivered
         - cancelled
-      tax:
-        minimum: 0
-        type: number
     type: object
   dto.UpdateOrgDTO:
     description: Organization update request
@@ -462,6 +443,10 @@ definitions:
       stock:
         minimum: 0
         type: integer
+      taxRate:
+        maximum: 1
+        minimum: 0
+        type: number
     type: object
   model.Address:
     properties:
@@ -550,6 +535,27 @@ definitions:
     x-enum-varnames:
     - DiscountPercentage
     - DiscountFixed
+  model.Invoice:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      invoiceNumber:
+        type: string
+      order:
+        $ref: '#/definitions/model.Order'
+      orderId:
+        type: integer
+      org:
+        $ref: '#/definitions/model.Org'
+      orgId:
+        type: integer
+      pdfPath:
+        type: string
+      updated_at:
+        type: string
+    type: object
   model.Order:
     properties:
       appliedDiscount:
@@ -565,8 +571,19 @@ definitions:
         $ref: '#/definitions/model.DeliveryInfo'
       discount:
         $ref: '#/definitions/model.DiscountInfo'
+      discountTotal:
+        description: / ItemDiscountTotal + AppliedDiscount
+        type: number
       id:
         type: integer
+      invoices:
+        items:
+          $ref: '#/definitions/model.Invoice'
+        type: array
+      itemDiscountTotal:
+        description: sum of all per-item discounts
+        format: float64
+        type: number
       items:
         items:
           $ref: '#/definitions/model.OrderItem'
@@ -582,26 +599,33 @@ definitions:
       status:
         $ref: '#/definitions/model.OrderStatus'
       subtotal:
-        description: Sum of all item totals before discount and tax
-        type: number
-      tax:
-        description: Tax percentage
+        description: sum of item (unitPrice * qty), before discounts & tax
         type: number
       taxAmount:
-        description: Tax amount
+        description: Sum of all item tax amounts
         type: number
       total:
-        description: Final total after discount and tax
+        description: final payable amount = sum of all item totals
         type: number
       updated_at:
         type: string
     type: object
   model.OrderItem:
     properties:
+      appliedDiscount:
+        description: Actual discount applied
+        type: number
+      appliedOrderDiscount:
+        description: proportional share of order-level discount
+        type: number
       created_at:
         type: string
+      discount:
+        $ref: '#/definitions/model.DiscountInfo'
       id:
         type: integer
+      notes:
+        type: string
       orderId:
         type: integer
       orgId:
@@ -612,7 +636,14 @@ definitions:
         type: integer
       quantity:
         type: integer
+      taxAmount:
+        description: tax charged on this line (after discounts)
+        type: number
+      taxRate:
+        description: e.g., 0.10 for 10%
+        type: number
       total:
+        description: (UnitPrice*Qty - discounts) + tax
         type: number
       unitPrice:
         type: number
@@ -784,6 +815,8 @@ definitions:
         type: string
       stock:
         type: integer
+      taxRate:
+        type: number
       updated_at:
         type: string
     type: object
@@ -1675,7 +1708,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateVariantDTO'
+          $ref: '#/definitions/dto.CreateProductVariantDTO'
       produces:
       - application/json
       responses:

@@ -254,7 +254,7 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param productId path int true "Product ID"
-// @Param request body dto.CreateVariantDTO true "Variant payload"
+// @Param request body dto.CreateProductVariantDTO true "Variant payload"
 // @Success 200 {object} APIResponseVariant
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      409  {object}  apperrors.APIErrorResponse
