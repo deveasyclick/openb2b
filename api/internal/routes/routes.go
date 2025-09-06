@@ -77,7 +77,7 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 
 	// Invoice
 	invoiceRepository := invoice.NewRepository(appCtx.DB)
-	invoiceService := invoice.NewService(invoiceRepository, orderService)
+	invoiceService := invoice.NewService(invoiceRepository, orderService, appCtx)
 	invoiceHandler := invoice.NewHandler(invoiceService, appCtx)
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(chiMiddleware.SetHeader("Content-Type", "application/json"))
