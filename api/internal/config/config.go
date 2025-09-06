@@ -19,11 +19,7 @@ const (
 type Config struct {
 	Port                      int
 	Env                       string
-	DBHost                    string
-	DBName                    string
-	DBUser                    string
-	DBPassword                string
-	DBPort                    int
+	DBURL                     string
 	RedisPort                 int
 	AppURL                    string
 	ClerkWebhookSigningSecret string
@@ -44,13 +40,9 @@ func LoadConfig(logger interfaces.Logger) (*Config, error) {
 
 	cfg := &Config{
 		Env:                       getEnv("ENV", defaultEnv),
-		DBHost:                    os.Getenv("DB_HOST"),
-		DBName:                    os.Getenv("DB_NAME"),
-		DBUser:                    os.Getenv("DB_USER"),
-		DBPassword:                os.Getenv("DB_PASSWORD"),
+		DBURL:                     os.Getenv("DB_URL"),
 		AppURL:                    os.Getenv("APP_URL"),
 		Port:                      parseintenv.ParseIntEnv("PORT", defaultPort, logger),
-		DBPort:                    parseintenv.ParseIntEnv("DB_PORT", defaultDBPort, logger),
 		RedisPort:                 parseintenv.ParseIntEnv("REDIS_PORT", defaultRedisPort, logger),
 		ClerkWebhookSigningSecret: os.Getenv("CLERK_WEBHOOK_SIGNING_SECRET"), // optional
 		ClerkSecret:               os.Getenv("CLERK_SECRET_KEY"),
@@ -80,21 +72,18 @@ func LoadConfig(logger interfaces.Logger) (*Config, error) {
 // Validate ensures all required environment variables are present
 func (c *Config) Validate() error {
 	required := map[string]string{
-		"DB_HOST":          c.DBHost,
-		"DB_NAME":          c.DBName,
-		"DB_USER":          c.DBUser,
-		"DB_PASSWORD":      c.DBPassword,
+		"DB_URL":           c.DBURL,
 		"CLERK_SECRET_KEY": c.ClerkSecret,
+		"SMTP_HOST":        c.SMTPHost,
+		"SMTP_USER":        c.SMTPUser,
+		"SMTP_PASSWORD":    c.SMTPPassword,
+		"SMTP_FROM":        c.SMTPFrom,
 	}
 
 	for key, value := range required {
 		if value == "" {
 			return fmt.Errorf("missing required environment variable: %s", key)
 		}
-	}
-
-	if c.SMTPHost == "" || c.SMTPPort == 0 || c.SMTPUser == "" || c.SMTPPassword == "" || c.SMTPFrom == "" {
-		return fmt.Errorf("missing required SMTP environment variables")
 	}
 
 	return nil
