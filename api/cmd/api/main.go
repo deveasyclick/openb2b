@@ -35,6 +35,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/routes"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/pkg/logger"
+	"github.com/deveasyclick/openb2b/pkg/mailer"
 	"github.com/go-chi/chi"
 )
 
@@ -49,6 +50,7 @@ func main() {
 
 	clerk.SetKey(cfg.ClerkSecret)
 
+	mailer := mailer.NewMailer(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.SMTPFrom)
 	dbConn := db.New(db.DBConfig{
 		Host:     cfg.DBHost,
 		Port:     cfg.DBPort,
@@ -63,6 +65,7 @@ func main() {
 		Config: cfg,
 		Logger: logger,
 		Cache:  nil,
+		Mailer: mailer,
 	}
 
 	middlewares := middleware.New()

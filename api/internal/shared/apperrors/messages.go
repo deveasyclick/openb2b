@@ -59,4 +59,15 @@ const (
 	ErrOrderNotFound      = "order not found"
 	ErrFilterOrder        = "error filtering orders"
 	ErrOrderNotPending    = "order not in pending"
+
+	// Invoice
+	ErrInvoiceAlreadyExists = "invoice already exists"
+	ErrCreateInvoice        = "error creating invoice"
+	ErrUpdateInvoice        = "error updating invoice"
+	ErrDeleteInvoice        = "error deleting invoice"
+	ErrFindInvoice          = "error finding invoice"
+	ErrInvoiceNotFound      = "invoice not found"
+	ErrFilterInvoice        = "error filtering invoices"
+	ErrIssueInvoice         = "error issuing invoice"
+	ErrInvalidInvoiceStatus = "invalid invoice status"
 )

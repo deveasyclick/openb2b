@@ -5,7 +5,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func registerCustomersRoutes(router chi.Router, handler interfaces.CustomerHandler) {
+func registerCustomerRoutes(router chi.Router, handler interfaces.CustomerHandler) {
 	router.Route("/customers", func(r chi.Router) {
 		r.Get("/", handler.Filter)
 
