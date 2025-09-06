@@ -16,6 +16,7 @@ type InvoiceHandler interface {
 	Delete(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request)
 	Filter(w http.ResponseWriter, r *http.Request)
+	Issue(w http.ResponseWriter, r *http.Request)
 }
 
 type InvoiceService interface {
@@ -26,6 +27,7 @@ type InvoiceService interface {
 	Filter(ctx context.Context, opts pagination.Options) ([]model.Invoice, int64, error)
 	FindByID(ctx context.Context, ID uint, preloads []string) (*model.Invoice, error)
 	WithTx(tx *gorm.DB) InvoiceService
+	Issue(ctx context.Context, id uint) error
 }
 
 type InvoiceRepository interface {
