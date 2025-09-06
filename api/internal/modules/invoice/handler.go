@@ -18,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var allowedInvoiceSearchFields = map[string]bool{"invoice_number": true, "notes": true, "status": true}
+var allowedInvoiceSearchFields = map[string]bool{"invoice_number": true, "notes": true, "status": true, "customer_name": true, "customer_email": true, "customer_phone": true}
 
 // For Swagger docs
 type APIResponseInvoice struct {
@@ -47,9 +47,12 @@ func NewHandler(service interfaces.InvoiceService, appCtx *deps.AppContext) inte
 // @Param        sort          query     string  false  "Sort by field, e.g. 'created_at desc'"
 // @Param        preloads      query     string  false  "Comma-separated list of relations to preload. relation must start with uppercase. e.g. 'Orders,Org'"
 // @Param        search_fields query     string  false  "Comma-separated list of fields to search (must be allowed)"
-// @Param        order_number          query     string  false  "Filter by order number"
+// @Param        invoice_number          query     string  false  "Filter by invoice number"
+// @Param        status     query     string  false  "Filter by status"
 // @Param        notes     query     string  false  "Filter by notes"
-// @Param        status       query     string  false  "Filter by status"
+// @Param        customer_name     query     string  false  "Filter by customer name"
+// @Param        customer_email     query     string  false  "Filter by customer email"
+// @Param        customer_phone     query     string  false  "Filter by customer phone"
 // @Success      200           {object}  APIResponseInvoice
 // @Failure      400           {object}  apperrors.APIError "Invalid filter parameters"
 // @Failure      500           {object}  apperrors.APIError "Internal server error"

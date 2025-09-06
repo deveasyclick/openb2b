@@ -1240,17 +1240,29 @@ paths:
         in: query
         name: search_fields
         type: string
-      - description: Filter by order number
+      - description: Filter by invoice number
         in: query
-        name: order_number
+        name: invoice_number
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
         type: string
       - description: Filter by notes
         in: query
         name: notes
         type: string
-      - description: Filter by status
+      - description: Filter by customer name
         in: query
-        name: status
+        name: customer_name
+        type: string
+      - description: Filter by customer email
+        in: query
+        name: customer_email
+        type: string
+      - description: Filter by customer phone
+        in: query
+        name: customer_phone
         type: string
       produces:
       - application/json

@@ -390,8 +390,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by order number",
-                        "name": "order_number",
+                        "description": "Filter by invoice number",
+                        "name": "invoice_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
                         "in": "query"
                     },
                     {
@@ -402,8 +408,20 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by status",
-                        "name": "status",
+                        "description": "Filter by customer name",
+                        "name": "customer_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by customer email",
+                        "name": "customer_email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by customer phone",
+                        "name": "customer_phone",
                         "in": "query"
                     }
                 ],
