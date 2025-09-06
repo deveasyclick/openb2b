@@ -46,4 +46,9 @@ type Invoice struct {
 	PDFUrl string `gorm:"type:text" json:"pdf_url"`
 
 	Items []*InvoiceItem `gorm:"foreignKey:InvoiceID" json:"items"`
+
+	CustomerEmail   string   `gorm:"type:text" json:"customerEmail"`
+	CustomerPhone   string   `gorm:"type:text" json:"customerPhone"`
+	CustomerName    string   `gorm:"type:text" json:"customerName"`
+	CustomerAddress *Address `gorm:"embedded;embeddedPrefix:customer_" json:"customerAddress"`
 }

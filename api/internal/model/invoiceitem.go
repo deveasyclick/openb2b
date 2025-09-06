@@ -6,10 +6,11 @@ type InvoiceItem struct {
 	OrgID uint `gorm:"not null;index"`
 	Org   *Org `gorm:"foreignKey:OrgID" json:"org"`
 
-	InvoiceID uint    `gorm:"not null;index"` // Link to invoice
-	VariantID uint    `gorm:"not null;index"`
-	Variant   Variant `gorm:"foreignKey:VariantID" json:"variant"`
+	InvoiceID uint     `gorm:"not null;index"` // Link to invoice
+	VariantID uint     `gorm:"not null;index"`
+	Variant   *Variant `gorm:"foreignKey:VariantID" json:"variant"`
 
+	SKU       string  `gorm:"type:varchar(50)" json:"sku"`
 	Notes     string  `gorm:"type:varchar(255)" json:"description"`
 	Quantity  int     `gorm:"not null;default:1" json:"quantity"`
 	UnitPrice float64 `gorm:"not null;default:0" json:"unitPrice"`
