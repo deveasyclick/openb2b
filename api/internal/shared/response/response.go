@@ -68,6 +68,13 @@ type APIResponseInt struct {
 	Data    int    `json:"data"`
 }
 
+// For Swagger docs
+type APIResponseString struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    string `json:"data"`
+}
+
 // WriteJSONSuccess writes a structured success response
 func WriteJSONSuccess[T any](w http.ResponseWriter, statusCode int, data T, logger interfaces.Logger) {
 	resp := APIResponse[T]{

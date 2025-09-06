@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{if .ProForma}}Pro Forma Invoice{{else}}Invoice{{end}}</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin: 40px;
+      color: #333;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      padding: 0;
+    }
+    .invoice-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .invoice-header h1 {
+      font-size: 32px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .invoice-details {
+      margin-bottom: 20px;
+    }
+    .invoice-details p {
+      margin: 5px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: right;
+    }
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+    th {
+      background-color: #f8f8f8;
+      font-weight: bold;
+    }
+    .totals {
+      width: 300px;
+      float: right;
+      margin-top: 20px;
+    }
+    .totals table {
+      border: none;
+    }
+    .totals th, .totals td {
+      border: none;
+      padding: 5px 10px;
+    }
+    .totals th {
+      text-align: left;
+    }
+    .grand-total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #000;
+      border-top: 2px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-header">
+    <h1>{{if .ProForma}}Pro Forma Invoice{{else}}Invoice{{end}}</h1>
+  </div>
+
+  <div class="invoice-details">
+    <p><strong>Invoice Number:</strong> {{.Number}}</p>
+    <p><strong>Date:</strong> {{.Date}}</p>
+    <p><strong>Customer:</strong> {{.CustomerName}}</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Item (SKU)</th>
+        <th>Qty</th>
+        <th>Unit Price</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Items}}
+      <tr>
+        <td>{{.SKU}}</td>
+        <td>{{.Quantity}}</td>
+        <td>₦{{printf "%.2f" .UnitPrice}}</td>
+        <td>₦{{printf "%.2f" (mul .UnitPrice .Quantity)}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <table>
+      <tr>
+        <th>Subtotal:</th>
+        <td>₦{{printf "%.2f" .Subtotal}}</td>
+      </tr>
+      <tr>
+        <th>Discount:</th>
+        <td>-₦{{printf "%.2f" .DiscountTotal}}</td>
+      </tr>
+      <tr>
+        <th>Tax:</th>
+        <td>₦{{printf "%.2f" .TaxTotal}}</td>
+      </tr>
+      <tr class="grand-total">
+        <th>Total:</th>
+        <td>₦{{printf "%.2f" .Total}}</td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

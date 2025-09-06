@@ -28,6 +28,11 @@ type Config struct {
 	AppURL                    string
 	ClerkWebhookSigningSecret string
 	ClerkSecret               string
+	SMTPHost                  string
+	SMTPPort                  int
+	SMTPUser                  string
+	SMTPPassword              string
+	SMTPFrom                  string
 }
 
 // LoadConfig loads environment variables from .env (if available) and system envs.
@@ -49,6 +54,11 @@ func LoadConfig(logger interfaces.Logger) (*Config, error) {
 		RedisPort:                 parseintenv.ParseIntEnv("REDIS_PORT", defaultRedisPort, logger),
 		ClerkWebhookSigningSecret: os.Getenv("CLERK_WEBHOOK_SIGNING_SECRET"), // optional
 		ClerkSecret:               os.Getenv("CLERK_SECRET_KEY"),
+		SMTPHost:                  os.Getenv("SMTP_HOST"),
+		SMTPPort:                  parseintenv.ParseIntEnv("SMTP_PORT", 587, logger),
+		SMTPUser:                  os.Getenv("SMTP_USER"),
+		SMTPPassword:              os.Getenv("SMTP_PASSWORD"),
+		SMTPFrom:                  os.Getenv("SMTP_FROM"),
 	}
 
 	// Validate required config
@@ -81,6 +91,10 @@ func (c *Config) Validate() error {
 		if value == "" {
 			return fmt.Errorf("missing required environment variable: %s", key)
 		}
+	}
+
+	if c.SMTPHost == "" || c.SMTPPort == 0 || c.SMTPUser == "" || c.SMTPPassword == "" || c.SMTPFrom == "" {
+		return fmt.Errorf("missing required SMTP environment variables")
 	}
 
 	return nil

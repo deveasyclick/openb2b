@@ -10,6 +10,7 @@ type OrderItem struct {
 	VariantID uint     `gorm:"uniqueIndex:idx_order_variant" json:"variantId"`
 	Variant   *Variant `gorm:"foreignKey:VariantID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 
+	SKU       string  `json:"sku"`
 	Quantity  int     `json:"quantity"`
 	UnitPrice float64 `json:"unitPrice"`
 	Total     float64 `json:"total"` // (UnitPrice*Qty - discounts) + tax

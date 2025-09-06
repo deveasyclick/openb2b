@@ -26,6 +26,9 @@ type AppContext struct {
 
 	// Cache provides access to a caching backend (e.g., Redis).
 	Cache interfaces.Cache
+
+	// Mailer sends emails (invoices, reminders, notifications).
+	Mailer interfaces.Mailer
 }
 
 // NewAppContext creates and returns a new AppContext instance with the
