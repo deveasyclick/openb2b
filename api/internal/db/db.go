@@ -68,6 +68,7 @@ func New(c DBConfig, appLogger interfaces.Logger) *gorm.DB {
 		&model.User{},
 		&model.Org{},
 		&model.Invoice{},
+		&model.InvoiceItem{},
 	)
 
 	if err != nil {
