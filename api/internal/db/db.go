@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/deveasyclick/openb2b/internal/model"
@@ -16,32 +15,9 @@ type Service struct {
 	DB *gorm.DB
 }
 
-type DBConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	Name     string
-	Env      string
-}
-
-func New(c DBConfig, appLogger interfaces.Logger) *gorm.DB {
-	sslmode := "disable"
-	if c.Env == "production" {
-		sslmode = "require"
-	}
-
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
-		c.Host,
-		c.User,
-		c.Password,
-		c.Name,
-		c.Port,
-		sslmode,
-	)
+func New(url string, appLogger interfaces.Logger) *gorm.DB {
 	gormLogger := gormlogger.New(appLogger, logger.Info)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
 		Logger: gormLogger,
 	})
 

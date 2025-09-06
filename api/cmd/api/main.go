@@ -51,14 +51,7 @@ func main() {
 	clerk.SetKey(cfg.ClerkSecret)
 
 	mailer := mailer.NewMailer(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.SMTPFrom)
-	dbConn := db.New(db.DBConfig{
-		Host:     cfg.DBHost,
-		Port:     cfg.DBPort,
-		User:     cfg.DBUser,
-		Password: cfg.DBPassword,
-		Name:     cfg.DBName,
-		Env:      cfg.Env,
-	}, logger)
+	dbConn := db.New(cfg.DBURL, logger)
 
 	appCtx := &deps.AppContext{
 		DB:     dbConn,
