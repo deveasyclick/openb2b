@@ -11,10 +11,12 @@ func registerInvoiceRoutes(router chi.Router, handler interfaces.InvoiceHandler)
 
 		r.Post("/", handler.Create)
 
-		r.Get("/{id}", handler.Get)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", handler.Get)
+			r.Put("/", handler.Update)
+			r.Delete("/", handler.Delete)
 
-		r.Patch("/{id}", handler.Update)
-
-		r.Delete("/{id}", handler.Delete)
+			r.Post("/issue", handler.Issue)
+		})
 	})
 }

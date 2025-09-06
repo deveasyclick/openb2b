@@ -207,7 +207,7 @@ func (h *InvoiceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	invoice, err := h.service.FindOneWithFields(ctx, nil, map[string]any{"id": id}, []string{"Order"})
+	invoice, err := h.service.FindOneWithFields(ctx, nil, map[string]any{"id": id}, []string{"Items", "Order"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrInvoiceNotFound, h.appCtx.Logger)
@@ -219,4 +219,43 @@ func (h *InvoiceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WriteJSONSuccess(w, http.StatusOK, invoice, h.appCtx.Logger)
+}
+
+// Update godoc
+// @Summary Update invoice
+// @Description Issue an invoice by ID
+// @Tags invoices
+// @Accept json
+// @Produce json
+// @Param id path int true "Invoice ID"
+// @Success 200 {object} response.APIResponseString
+// @Failure 400  {object}  apperrors.APIErrorResponse
+// @Failure 500  {object}  apperrors.APIErrorResponse
+// @Router /invoices/{id}/issue [post]
+// @Security BearerAuth
+func (h *InvoiceHandler) Issue(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idParam := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
+		return
+	}
+
+	err = h.service.Issue(ctx, uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrInvoiceNotFound, h.appCtx.Logger)
+			return
+		}
+
+		if errors.Is(err, errors.New(apperrors.ErrInvalidInvoiceStatus)) {
+			response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidInvoiceStatus, h.appCtx.Logger)
+		}
+
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrIssueInvoice, h.appCtx.Logger)
+		return
+	}
+
+	response.WriteJSONSuccess(w, http.StatusOK, "Invoice issued and emailed", h.appCtx.Logger)
 }

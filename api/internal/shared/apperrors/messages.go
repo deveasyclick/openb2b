@@ -68,4 +68,6 @@ const (
 	ErrFindInvoice          = "error finding invoice"
 	ErrInvoiceNotFound      = "invoice not found"
 	ErrFilterInvoice        = "error filtering invoices"
+	ErrIssueInvoice         = "error issuing invoice"
+	ErrInvalidInvoiceStatus = "invalid invoice status"
 )
