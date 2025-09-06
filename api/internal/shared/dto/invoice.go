@@ -18,17 +18,21 @@ func (d *CreateInvoiceDTO) ToModel(
 	order *model.Order,
 ) *model.Invoice {
 	inv := &model.Invoice{
-		OrgID:         orgID,
-		OrderID:       order.ID,
-		InvoiceNumber: numbergen.Generate("INV"),
-		Notes:         d.Notes,
-		IssuedAt:      time.Now(),
-		Status:        model.InvoiceStatusDraft,
+		OrgID:           orgID,
+		OrderID:         order.ID,
+		InvoiceNumber:   numbergen.Generate("INV"),
+		Notes:           d.Notes,
+		IssuedAt:        time.Now(),
+		Status:          model.InvoiceStatusDraft,
+		CustomerEmail:   order.Customer.Email,
+		CustomerPhone:   order.Customer.PhoneNumber,
+		CustomerName:    order.Customer.FirstName + " " + order.Customer.LastName,
+		CustomerAddress: order.Customer.Address,
 
 		// Snapshot financial data
 		Subtotal:      order.Subtotal,
 		TaxTotal:      order.TaxTotal,
-		DiscountTotal: order.AppliedDiscount,
+		DiscountTotal: order.DiscountTotal,
 		Total:         order.Total,
 	}
 
@@ -44,6 +48,7 @@ func (d *CreateInvoiceDTO) ToModel(
 			TaxAmount: oi.TaxAmount,
 			LineTotal: oi.Total,
 			Subtotal:  float64(oi.Quantity) * oi.UnitPrice,
+			SKU:       oi.SKU,
 		}
 	}
 

@@ -23,10 +23,11 @@ func (i *CreateOrderItemDTO) ToModel(orgID uint, variant model.Variant) model.Or
 	return model.OrderItem{
 		OrgID:     orgID,
 		ProductID: variant.ProductID,
-		VariantID: i.VariantID,
 		Notes:     i.Notes,
 		Quantity:  i.Quantity,
+		VariantID: i.VariantID,
 		UnitPrice: variant.Price,
+		SKU:       variant.SKU,
 		Discount: model.DiscountInfo{
 			Type:   i.Discount.Type,
 			Amount: i.Discount.Amount,
