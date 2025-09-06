@@ -222,7 +222,7 @@ func (h *InvoiceHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update godoc
-// @Summary Update invoice
+// @Summary Issue an invoice
 // @Description Issue an invoice by ID
 // @Tags invoices
 // @Accept json

@@ -642,6 +642,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/invoices/{id}/issue": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Issue an invoice by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Issue an invoice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.APIResponseString"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/orders": {
             "get": {
                 "security": [
@@ -2553,6 +2602,18 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "customerAddress": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
                 "discountTotal": {
                     "type": "number"
                 },
@@ -2635,6 +2696,9 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
+                "sku": {
+                    "type": "string"
+                },
                 "subtotal": {
                     "description": "Sum of all item totals before discount and tax",
                     "type": "number"
@@ -2660,6 +2724,7 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "draft",
+                "pro_forma",
                 "issued",
                 "paid",
                 "overdue",
@@ -2668,6 +2733,7 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "InvoiceStatusDraft",
+                "InvoiceStatusProForma",
                 "InvoiceStatusIssued",
                 "InvoiceStatusPaid",
                 "InvoiceStatusOverdue",
@@ -2790,6 +2856,9 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "sku": {
+                    "type": "string"
                 },
                 "taxAmount": {
                     "description": "tax charged on this line (after discounts)",
@@ -3091,6 +3160,20 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.Variant"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.APIResponseString": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"

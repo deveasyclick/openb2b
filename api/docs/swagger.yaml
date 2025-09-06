@@ -572,6 +572,14 @@ definitions:
         type: string
       currency:
         type: string
+      customerAddress:
+        $ref: '#/definitions/model.Address'
+      customerEmail:
+        type: string
+      customerName:
+        type: string
+      customerPhone:
+        type: string
       discountTotal:
         type: number
       dueDate:
@@ -627,6 +635,8 @@ definitions:
         type: integer
       quantity:
         type: integer
+      sku:
+        type: string
       subtotal:
         description: Sum of all item totals before discount and tax
         type: number
@@ -644,6 +654,7 @@ definitions:
   model.InvoiceStatus:
     enum:
     - draft
+    - pro_forma
     - issued
     - paid
     - overdue
@@ -652,6 +663,7 @@ definitions:
     type: string
     x-enum-varnames:
     - InvoiceStatusDraft
+    - InvoiceStatusProForma
     - InvoiceStatusIssued
     - InvoiceStatusPaid
     - InvoiceStatusOverdue
@@ -737,6 +749,8 @@ definitions:
         type: integer
       quantity:
         type: integer
+      sku:
+        type: string
       taxAmount:
         description: tax charged on this line (after discounts)
         type: number
@@ -945,6 +959,15 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/model.Variant'
+      message:
+        type: string
+    type: object
+  response.APIResponseString:
+    properties:
+      code:
+        type: integer
+      data:
+        type: string
       message:
         type: string
     type: object
@@ -1383,6 +1406,37 @@ paths:
       security:
       - BearerAuth: []
       summary: Update invoice
+      tags:
+      - invoices
+  /invoices/{id}/issue:
+    post:
+      consumes:
+      - application/json
+      description: Issue an invoice by ID
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.APIResponseString'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Issue an invoice
       tags:
       - invoices
   /orders:
