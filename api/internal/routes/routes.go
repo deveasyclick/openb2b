@@ -107,7 +107,7 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 
 		docs.SwaggerInfo.Host = parsedURL.Host
 		r.Get("/swagger/*", swagger.Handler(
-			swagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", parsedURL.Host)),
+			swagger.URL(fmt.Sprintf("%s/swagger/doc.json", appCtx.Config.AppURL)),
 		))
 	}
 }
