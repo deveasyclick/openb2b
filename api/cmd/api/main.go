@@ -34,6 +34,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/middleware"
 	"github.com/deveasyclick/openb2b/internal/routes"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
+	clerkPkg "github.com/deveasyclick/openb2b/pkg/clerk"
 	"github.com/deveasyclick/openb2b/pkg/logger"
 	"github.com/deveasyclick/openb2b/pkg/mailer"
 	"github.com/go-chi/chi"
@@ -62,8 +63,9 @@ func main() {
 	}
 
 	middlewares := middleware.New()
+	clerkService := clerkPkg.New()
 
-	routes.Register(r, appCtx, middlewares)
+	routes.Register(r, appCtx, middlewares, clerkService)
 
 	port := cfg.Port
 	if port == 0 {
