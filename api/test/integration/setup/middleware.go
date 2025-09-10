@@ -1,7 +1,11 @@
 package setup
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -9,6 +13,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
+	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
 
@@ -62,6 +67,35 @@ func (m *fakeMiddleware) ValidateJWT(opts ...clerkHttp.AuthorizationOption) func
 			// Put them into context (mimicking Clerk)
 			ctx := clerk.ContextWithSessionClaims(r.Context(), fakeClaims)
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func (m *fakeMiddleware) VerifyWebhook() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"message": "Error reading request body"}`))
+				return
+			}
+			defer r.Body.Close()
+
+			// Create a new reader with the body for verification
+			r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+			event := types.WebhookEvent{}
+			if err := json.Unmarshal(body, &event); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"message": "Invalid webhook payload"}`))
+				return
+			}
+			// Store the parsed event in the request context
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, types.WebhookEventKey, event)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
 		})
 	}
 }
