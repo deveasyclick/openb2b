@@ -1,15 +1,22 @@
 package user
 
 import (
-	"encoding/json"
 	"net/http"
 
+	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
+	"gorm.io/gorm"
 )
+
+type APIResponseUser struct {
+	Code    int        `json:"code"`
+	Message string     `json:"message"`
+	Data    model.User `json:"data"`
+}
 
 type Handler struct {
 	service interfaces.UserService
@@ -25,9 +32,9 @@ func NewHandler(service interfaces.UserService, appCtx *deps.AppContext) interfa
 // @Description Get an authenticated user
 // @Tags users
 // @Produce json
-// @Success 200 {object} model.User
+// @Success 200 {object} APIResponseUser
 // @Failure 404 {object} apperrors.APIErrorResponse
-// @Failure 400  {object}  apperrors.APIErrorResponse
+// @Failure 401  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
 // @Router /users/me [get]
 // @Security BearerAuth
@@ -36,21 +43,20 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	userFromContext, err := identity.UserFromContext(ctx)
 
 	if err != nil {
-		h.appCtx.Logger.Error("error getting user from context", "err", err)
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusUnauthorized,
-			Message: "unauthorized",
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, 401, nil, "unauthorized", h.appCtx.Logger)
 		return
 	}
 
-	user, apiError := h.service.FindByID(ctx, userFromContext.ID, []string{"Org"})
-	if apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+	user, err := h.service.FindByID(ctx, userFromContext.ID, []string{"Org"})
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response.WriteJSONErrorV2(w, 404, err, "user not found", h.appCtx.Logger)
+			return
+		}
+
+		response.WriteJSONErrorV2(w, 500, err, apperrors.ErrFindUser, h.appCtx.Logger)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(user); err != nil {
-		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
-	}
+	response.WriteJSONSuccess(w, http.StatusOK, user, h.appCtx.Logger)
 }
