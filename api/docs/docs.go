@@ -1794,11 +1794,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.User"
+                            "$ref": "#/definitions/user.APIResponseUser"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/apperrors.APIErrorResponse"
                         }
@@ -1838,7 +1838,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.WebhookEvent"
+                            "$ref": "#/definitions/webhook.FullWebhookEvent"
                         }
                     }
                 ],
@@ -3198,7 +3198,55 @@ const docTemplate = `{
                 }
             }
         },
-        "types.WebhookEvent": {
+        "types.ClerkEmail": {
+            "type": "object",
+            "properties": {
+                "email_address": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "types.ClerkUser": {
+            "type": "object",
+            "properties": {
+                "email_addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ClerkEmail"
+                    }
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.APIResponseUser": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "webhook.FullWebhookEvent": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -3208,8 +3256,11 @@ const docTemplate = `{
                 },
                 "data": {
                     "description": "Data payload of the webhook",
-                    "type": "object",
-                    "additionalProperties": true
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.ClerkUser"
+                        }
+                    ]
                 },
                 "id": {
                     "description": "ID of the webhook event",
