@@ -1,4 +1,4 @@
-package webhook
+package middleware
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
-	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/pkg/svix"
@@ -46,16 +45,16 @@ import (
 //
 //	Clerk → POST /webhook/clerk → VerifyWebhook middleware (validates + injects event)
 //	→ ClerkWebhookHandler (consumes types.WebhookEvent from context).
-func Verify(appCtx *deps.AppContext) func(http.Handler) http.Handler {
+func (m *middleware) VerifyWebhook() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Verify webhook signature
-			wh, err := svix.GetWebhookVerifier(appCtx.Config.ClerkWebhookSigningSecret)
+			wh, err := svix.GetWebhookVerifier(m.appCtx.Config.ClerkWebhookSigningSecret)
 			if err != nil {
 				response.WriteJSONError(w, &apperrors.APIError{
 					Code:    http.StatusInternalServerError,
 					Message: "Webhook verifier not initialized",
-				}, appCtx.Logger)
+				}, m.appCtx.Logger)
 				return
 			}
 
@@ -65,7 +64,7 @@ func Verify(appCtx *deps.AppContext) func(http.Handler) http.Handler {
 				response.WriteJSONError(w, &apperrors.APIError{
 					Code:    http.StatusBadRequest,
 					Message: "Error reading request body",
-				}, appCtx.Logger)
+				}, m.appCtx.Logger)
 				return
 			}
 			defer r.Body.Close()
@@ -85,7 +84,7 @@ func Verify(appCtx *deps.AppContext) func(http.Handler) http.Handler {
 				response.WriteJSONError(w, &apperrors.APIError{
 					Code:    http.StatusUnauthorized,
 					Message: "Invalid webhook signature",
-				}, appCtx.Logger)
+				}, m.appCtx.Logger)
 				return
 			}
 
@@ -95,12 +94,12 @@ func Verify(appCtx *deps.AppContext) func(http.Handler) http.Handler {
 				response.WriteJSONError(w, &apperrors.APIError{
 					Code:    http.StatusBadRequest,
 					Message: "Invalid webhook payload",
-				}, appCtx.Logger)
+				}, m.appCtx.Logger)
 				return
 			}
 			// Store the parsed event in the request context
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, webhookEventKey, event)
+			ctx = context.WithValue(ctx, types.WebhookEventKey, event)
 			r = r.WithContext(ctx)
 
 			// Call the next handler

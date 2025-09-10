@@ -7,15 +7,20 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2"
 	clerkHttp "github.com/clerk/clerk-sdk-go/v2/http"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
+	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/identity"
 	"github.com/deveasyclick/openb2b/internal/shared/response"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 )
 
-type middleware struct{}
+type middleware struct {
+	appCtx *deps.AppContext
+}
 
-func New() interfaces.Middleware {
-	return &middleware{}
+func New(appCtx *deps.AppContext) interfaces.Middleware {
+	return &middleware{
+		appCtx: appCtx,
+	}
 }
 
 func customClaimsConstructor(ctx context.Context) any {

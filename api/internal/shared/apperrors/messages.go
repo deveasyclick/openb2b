@@ -6,6 +6,7 @@ const (
 	ErrInvalidId          = "invalid id"
 	ErrInvalidRequestBody = "invalid request body"
 	ErrInvalidFilter      = "invalid filter"
+	ErrDecodeRequestBody  = "failed to decode request body"
 
 	// Customer
 	ErrCustomerNotFound = "customer not found"
@@ -70,4 +71,7 @@ const (
 	ErrFilterInvoice        = "error filtering invoices"
 	ErrIssueInvoice         = "error issuing invoice"
 	ErrInvalidInvoiceStatus = "invalid invoice status"
+
+	// Webhook
+	ErrEmailNotFoundInClerkWebhook = "email not found in clerk webhook"
 )

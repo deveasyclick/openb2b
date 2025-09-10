@@ -971,16 +971,47 @@ definitions:
       message:
         type: string
     type: object
-  types.WebhookEvent:
+  types.ClerkEmail:
+    properties:
+      email_address:
+        type: string
+      id:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  types.ClerkUser:
+    properties:
+      email_addresses:
+        items:
+          $ref: '#/definitions/types.ClerkEmail'
+        type: array
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+    type: object
+  user.APIResponseUser:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/model.User'
+      message:
+        type: string
+    type: object
+  webhook.FullWebhookEvent:
     properties:
       created_at:
         description: Event creation timestamp
         example: "2025-08-26T18:00:00Z"
         type: string
       data:
-        additionalProperties: true
+        allOf:
+        - $ref: '#/definitions/types.ClerkUser'
         description: Data payload of the webhook
-        type: object
       id:
         description: ID of the webhook event
         example: evt_123456
@@ -2147,9 +2178,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.User'
-        "400":
-          description: Bad Request
+            $ref: '#/definitions/user.APIResponseUser'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/apperrors.APIErrorResponse'
         "404":
@@ -2177,7 +2208,7 @@ paths:
         name: event
         required: true
         schema:
-          $ref: '#/definitions/types.WebhookEvent'
+          $ref: '#/definitions/webhook.FullWebhookEvent'
       produces:
       - application/json
       responses:

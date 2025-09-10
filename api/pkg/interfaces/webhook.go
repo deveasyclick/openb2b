@@ -4,12 +4,11 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 )
 
 type WebhookService interface {
-	HandleEvent(ctx context.Context, event *types.WebhookEvent) *apperrors.APIError
+	HandleEvent(ctx context.Context, event *types.WebhookEvent) error
 }
 
 type WebhookHandler interface {
