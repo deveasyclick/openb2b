@@ -2,26 +2,27 @@ package webhook
 
 import (
 	"context"
-	"fmt"
-	"net/http"
+	"errors"
 	"strconv"
 
 	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
+	"github.com/deveasyclick/openb2b/pkg/clerk"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/mitchellh/mapstructure"
+	"gorm.io/gorm"
 )
 
 type service struct {
 	userService   interfaces.UserService
-	clerkService  interfaces.ClerkService
+	clerkService  clerk.Service
 	appCtx        *deps.AppContext
-	eventHandlers map[string]func(context.Context, map[string]interface{}) *apperrors.APIError
+	eventHandlers map[string]func(context.Context, map[string]interface{}) error
 }
 
-func NewService(us interfaces.UserService, cs interfaces.ClerkService, appCtx *deps.AppContext) interfaces.WebhookService {
+func NewService(us interfaces.UserService, cs clerk.Service, appCtx *deps.AppContext) interfaces.WebhookService {
 	s := &service{userService: us, clerkService: cs, appCtx: appCtx}
 
 	// eventHandlers maps webhook event types to their corresponding handler functions.
@@ -43,7 +44,7 @@ func NewService(us interfaces.UserService, cs interfaces.ClerkService, appCtx *d
 	//   }
 	//
 	// This design keeps webhook handling modular and extensible.
-	s.eventHandlers = map[string]func(context.Context, map[string]interface{}) *apperrors.APIError{
+	s.eventHandlers = map[string]func(context.Context, map[string]interface{}) error{
 		"user.created": s.createUser,
 	}
 
@@ -80,7 +81,7 @@ func NewService(us interfaces.UserService, cs interfaces.ClerkService, appCtx *d
 // This allows the webhook service to be easily extended by registering new
 // event handlers in the `eventHandlers` map.
 
-func (s *service) HandleEvent(ctx context.Context, event *types.WebhookEvent) *apperrors.APIError {
+func (s *service) HandleEvent(ctx context.Context, event *types.WebhookEvent) error {
 	if handler, ok := s.eventHandlers[event.Type]; ok {
 		return handler(ctx, event.Data)
 	}
@@ -89,34 +90,26 @@ func (s *service) HandleEvent(ctx context.Context, event *types.WebhookEvent) *a
 	return nil
 }
 
-func (s *service) createUser(ctx context.Context, data map[string]interface{}) *apperrors.APIError {
+func (s *service) createUser(ctx context.Context, data map[string]interface{}) error {
 	var userData types.ClerkUser
 	if err := mapstructure.Decode(data, &userData); err != nil {
-		return &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: fmt.Sprintf("failed to decode ClerkUser: %s", err),
-		}
+		return errors.New(apperrors.ErrDecodeRequestBody)
 	}
 
 	email := ""
 	if len(userData.EmailAddresses) > 0 {
 		email = userData.EmailAddresses[0].EmailAddress
 	} else {
-		return &apperrors.APIError{
-			Code:    http.StatusBadRequest,
-			Message: "no email address found in ClerkUser",
-		}
+		return errors.New(apperrors.ErrEmailNotFoundInClerkWebhook)
 	}
-	user, apiError := s.userService.FindByEmail(ctx, email)
-	if apiError != nil {
-		return apiError
+	user, err := s.userService.FindByEmail(ctx, email)
+	s.appCtx.Logger.Info("user", err)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
 	}
 
 	if user != nil {
-		return &apperrors.APIError{
-			Code:    http.StatusConflict,
-			Message: apperrors.ErrUserAlreadyExists,
-		}
+		return errors.New(apperrors.ErrUserAlreadyExists)
 	}
 
 	user = &model.User{
@@ -127,29 +120,23 @@ func (s *service) createUser(ctx context.Context, data map[string]interface{}) *
 		Role:      model.RoleAdmin,
 	}
 
-	apiError = s.userService.Create(ctx, user)
-	if apiError != nil {
-
+	err = s.userService.Create(ctx, user)
+	if err != nil {
 		// TODO: Move this later to a background worker
-		// Delete user from Clerk if creation fails
 		go func(ctx context.Context, clerkId string) {
 			cleanupError := s.clerkService.DeleteUser(ctx, user.ClerkID)
 			if cleanupError != nil {
 				s.appCtx.Logger.Error("error deleting user from clerk", "error", cleanupError, "user", user.ID)
 			}
 		}(ctx, user.ClerkID)
-
-		return apiError
+		return err
 	}
+	s.appCtx.Logger.Info("User created", "user ID", user.ID)
 
 	userId := strconv.FormatUint(uint64(user.ID), 10)
-	err := s.clerkService.SetExternalID(ctx, user.ClerkID, userId)
+	err = s.clerkService.SetRoleAndExternalID(ctx, user.ClerkID, userId, model.RoleAdmin)
 	if err != nil {
-		return &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     `Error updating clerk user`,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateUser, err),
-		}
+		return err
 	}
 	s.appCtx.Logger.Info("Updated clerk user externalId", "externalId", user.ID)
 

@@ -28,7 +28,7 @@ func NewHandler(webhookService interfaces.WebhookService, appCtx *deps.AppContex
 // @Tags         webhooks
 // @Accept       json
 // @Produce      json
-// @Param        event  body      types.WebhookEvent  true  "Webhook Event Payload"
+// @Param        event  body      FullWebhookEvent  true  "Webhook Event Payload"
 // @Success      200    {string}  string               "OK"
 // @Failure      400    {object}  apperrors.APIErrorResponse
 // @Failure      401    {object}  apperrors.APIErrorResponse
@@ -37,7 +37,7 @@ func NewHandler(webhookService interfaces.WebhookService, appCtx *deps.AppContex
 // @BasePath /
 func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	event, ok := ctx.Value(webhookEventKey).(types.WebhookEvent)
+	event, ok := ctx.Value(types.WebhookEventKey).(types.WebhookEvent)
 	if !ok {
 		response.WriteJSONError(w, &apperrors.APIError{
 			Code:    http.StatusBadRequest,
@@ -49,19 +49,24 @@ func (h *handler) HandleClerkEvents(w http.ResponseWriter, r *http.Request) {
 	h.appCtx.Logger.Info("Handling webhook event", "event", event)
 
 	err := h.webhookService.HandleEvent(ctx, &event)
+	errorMessage := "success"
+	if err != nil {
+		// TODO: Send slack alert
+		h.appCtx.Logger.Warn("Error handling webhook event", "event", event.Type, "error", err.Error())
 
-	if err != nil && err.Code != http.StatusConflict {
-		h.appCtx.Logger.Warn("Error handling webhook event", "event", event.Type, "error", err.Message)
-
-		// Return status Ok if auser already exists so the webhook will not keep retrying
+		switch err.Error() {
+		case apperrors.ErrUserAlreadyExists:
+			errorMessage = apperrors.ErrUserAlreadyExists
+		case apperrors.ErrEmailNotFoundInClerkWebhook:
+			errorMessage = apperrors.ErrEmailNotFoundInClerkWebhook
+		case apperrors.ErrDecodeRequestBody:
+			errorMessage = apperrors.ErrDecodeRequestBody
+		default:
+			errorMessage = "an unknown error has occurred"
+		}
+		// Return status Ok if a user already exists so the webhook will not keep retrying
 		w.WriteHeader(http.StatusOK)
 	}
 
-	if err != nil {
-		//TODO: Send slerk alert
-		response.WriteJSONError(w, err, h.appCtx.Logger)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
+	response.WriteJSONSuccess(w, http.StatusOK, errorMessage, h.appCtx.Logger)
 }

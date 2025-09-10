@@ -8,6 +8,7 @@ import (
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
+	"github.com/deveasyclick/openb2b/pkg/clerk"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"gorm.io/gorm"
 )
@@ -15,14 +16,14 @@ import (
 type createOrgUseCase struct {
 	orgService   interfaces.OrgService
 	userService  interfaces.UserService
-	clerkService interfaces.ClerkService
+	clerkService clerk.Service
 	appCtx       *deps.AppContext
 }
 
 func NewCreateUseCase(
 	os interfaces.OrgService,
 	us interfaces.UserService,
-	cs interfaces.ClerkService,
+	cs clerk.Service,
 	appCtx *deps.AppContext,
 ) interfaces.CreateOrgUseCase {
 	return &createOrgUseCase{

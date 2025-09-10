@@ -27,7 +27,14 @@ func (r *repository) Update(ctx context.Context, user *model.User) error {
 }
 
 func (r *repository) Delete(ctx context.Context, ID uint) error {
-	return r.db.WithContext(ctx).Delete(&model.User{}, ID).Error
+	res := r.db.WithContext(ctx).Delete(&model.User{}, ID)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r *repository) FindByID(ctx context.Context, ID uint) (*model.User, error) {

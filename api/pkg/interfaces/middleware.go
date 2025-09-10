@@ -9,4 +9,5 @@ import (
 type Middleware interface {
 	Recover(logger Logger) func(http.Handler) http.Handler
 	ValidateJWT(opts ...clerkHttp.AuthorizationOption) func(http.Handler) http.Handler
+	VerifyWebhook() func(http.Handler) http.Handler
 }

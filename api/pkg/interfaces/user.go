@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/model"
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"gorm.io/gorm"
 )
 
@@ -19,12 +18,12 @@ type UserRepository interface {
 }
 
 type UserService interface {
-	Create(ctx context.Context, user *model.User) *apperrors.APIError
-	Update(ctx context.Context, distributor *model.User) *apperrors.APIError
-	Delete(ctx context.Context, ID uint) *apperrors.APIError
-	FindByEmail(ctx context.Context, email string) (*model.User, *apperrors.APIError)
-	FindByID(ctx context.Context, ID uint, preloads []string) (*model.User, *apperrors.APIError)
-	AssignOrg(ctx context.Context, userID uint, orgID uint) *apperrors.APIError
+	Create(ctx context.Context, user *model.User) error
+	Update(ctx context.Context, distributor *model.User) error
+	Delete(ctx context.Context, ID uint) error
+	FindByEmail(ctx context.Context, email string) (*model.User, error)
+	FindByID(ctx context.Context, ID uint, preloads []string) (*model.User, error)
+	AssignOrg(ctx context.Context, userID uint, orgID uint) error
 	WithTx(tx *gorm.DB) UserService
 }
 

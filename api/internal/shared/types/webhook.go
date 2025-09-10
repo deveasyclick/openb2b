@@ -1,5 +1,9 @@
 package types
 
+type contextKey string
+
+const WebhookEventKey contextKey = "webhookEvent"
+
 // WebhookEvent represents a Clerk webhook payload
 // swagger:model WebhookEvent
 type WebhookEvent struct {
