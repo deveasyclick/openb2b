@@ -62,7 +62,7 @@ func main() {
 		Mailer: mailer,
 	}
 
-	middlewares := middleware.New()
+	middlewares := middleware.New(appCtx)
 	clerkService := clerkPkg.New()
 
 	routes.Register(r, appCtx, middlewares, clerkService)
