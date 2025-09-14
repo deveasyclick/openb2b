@@ -2,11 +2,8 @@ package org
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/model"
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"gorm.io/gorm"
 )
@@ -21,71 +18,26 @@ func NewService(repo interfaces.OrgRepository) interfaces.OrgService {
 	}
 }
 
-func (s *service) Create(ctx context.Context, org *model.Org) *apperrors.APIError {
-	if err := s.repo.Create(ctx, org); err != nil {
-		return &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     fmt.Sprintf("%s: id %d", apperrors.ErrCreateOrg, org.ID),
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrCreateOrg, err),
-		}
-	}
-
-	return nil
+func (s *service) Create(ctx context.Context, org *model.Org) error {
+	return s.repo.Create(ctx, org)
 }
 
-func (s *service) Update(ctx context.Context, org *model.Org) *apperrors.APIError {
-	existing, err := s.repo.FindByID(ctx, org.ID)
-	if err != nil || existing == nil {
-		return &apperrors.APIError{
-			Code:    http.StatusNotFound,
-			Message: fmt.Sprintf("%s: id %d", apperrors.ErrOrgNotFound, org.ID),
-		}
-	}
-
-	err = s.repo.Update(ctx, org)
-	if err != nil {
-		return &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrUpdateOrg,
-			InternalMsg: fmt.Sprintf("%s: error %s", apperrors.ErrUpdateOrg, err),
-		}
-	}
-
-	return nil
+func (s *service) Update(ctx context.Context, org *model.Org) error {
+	return s.repo.Update(ctx, org)
 }
 
-func (s *service) Delete(ctx context.Context, ID uint) *apperrors.APIError {
-	err := s.repo.Delete(ctx, ID)
-	if err != nil {
-		return &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrDeleteOrg,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrDeleteOrg, err),
-		}
-	}
-	return nil
+func (s *service) Delete(ctx context.Context, ID uint) error {
+	return s.repo.Delete(ctx, ID)
 }
 
-func (s *service) FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError) {
-	org, err := s.repo.FindOneWithFields(ctx, nil, map[string]any{"id": ID}, nil)
-	if err != nil {
-		return nil, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrFindOrg,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrFindOrg, err),
-		}
-	}
-	return org, nil
+func (s *service) FindOrg(ctx context.Context, ID uint) (*model.Org, error) {
+	return s.repo.FindOneWithFields(ctx, nil, map[string]any{"id": ID}, nil)
 }
 
-func (s *service) Exists(ctx context.Context, where map[string]any) (bool, *apperrors.APIError) {
+func (s *service) Exists(ctx context.Context, where map[string]any) (bool, error) {
 	org, err := s.repo.FindOneWithFields(ctx, []string{"id"}, where, nil)
 	if err != nil {
-		return false, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrFindOrg,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrFindOrg, err),
-		}
+		return false, err
 	}
 
 	if org != nil {

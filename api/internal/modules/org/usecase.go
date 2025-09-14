@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/pkg/clerk"
@@ -34,7 +33,7 @@ func NewCreateUseCase(
 	}
 }
 
-func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgInput) *apperrors.APIError {
+func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgInput) error {
 	txErr := uc.appCtx.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
 		// Wrap services with transactional repos
@@ -54,27 +53,31 @@ func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgIn
 		return nil // commit
 	})
 
-	// TODO: return plain error in services
 	if txErr != nil {
-		var apiErr *apperrors.APIError
-		if errors.As(txErr, &apiErr) {
-			return apiErr // return your own type
-		}
-
-		return &apperrors.APIError{
-			Code:        500,
-			Message:     "internal server error",
-			InternalMsg: txErr.Error(),
-		}
+		return txErr
 	}
 
 	orgID := strconv.FormatUint(uint64(input.Org.ID), 10)
 	err := uc.clerkService.SetOrg(ctx, input.User.ClerkID, orgID)
 	if err != nil {
-		uc.appCtx.Logger.Error("failed to set custom claim org in clerk", "error", err)
 		// TODO: Send slerk alerk if this fail or delete org when this fail
 		// TODO: Do this later in  a background worker
-		return nil
+		// Delete org and user org assignment if clerk update failed
+		go func() {
+			if rec := recover(); rec != nil {
+				uc.appCtx.Logger.Error("error recovered from panic", "error", err)
+			}
+			err := uc.orgService.Delete(ctx, input.Org.ID)
+			if err != nil {
+				uc.appCtx.Logger.Error("error deleting org", "error", err)
+			}
+			err = uc.userService.AssignOrg(ctx, input.User.ID, 0)
+			if err != nil {
+				uc.appCtx.Logger.Error("error deleting org", "error", err)
+			}
+		}()
+
+		return errors.New("failed to create workspace, setting custom claim in clerk failed")
 	}
 
 	return nil
