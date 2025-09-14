@@ -944,6 +944,15 @@ definitions:
       message:
         type: string
     type: object
+  org.APIResponseOrg:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/model.Org'
+      message:
+        type: string
+    type: object
   product.APIResponseProduct:
     properties:
       code:
@@ -1692,7 +1701,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Org'
+            $ref: '#/definitions/org.APIResponseOrg'
         "400":
           description: Bad Request
           schema:
@@ -1719,7 +1728,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Deleted organization ID
+          description: OK
           schema:
             type: integer
         "400":
@@ -1753,7 +1762,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Org'
+            $ref: '#/definitions/org.APIResponseOrg'
         "400":
           description: Bad Request
           schema:
@@ -1771,7 +1780,7 @@ paths:
       summary: Get organization
       tags:
       - organizations
-    put:
+    patch:
       consumes:
       - application/json
       description: Update an existing organization by ID
@@ -1793,7 +1802,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Org'
+            $ref: '#/definitions/org.APIResponseOrg'
         "400":
           description: Bad Request
           schema:

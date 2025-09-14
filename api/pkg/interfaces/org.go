@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/deveasyclick/openb2b/internal/model"
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"gorm.io/gorm"
 )
@@ -20,12 +19,12 @@ type OrgRepository interface {
 }
 
 type OrgService interface {
-	Create(ctx context.Context, org *model.Org) *apperrors.APIError
-	Update(ctx context.Context, org *model.Org) *apperrors.APIError
-	Delete(ctx context.Context, ID uint) *apperrors.APIError
-	FindOrg(ctx context.Context, ID uint) (*model.Org, *apperrors.APIError)
+	Create(ctx context.Context, org *model.Org) error
+	Update(ctx context.Context, org *model.Org) error
+	Delete(ctx context.Context, ID uint) error
+	FindOrg(ctx context.Context, ID uint) (*model.Org, error)
 	WithTx(tx *gorm.DB) OrgService
-	Exists(ctx context.Context, where map[string]any) (bool, *apperrors.APIError)
+	Exists(ctx context.Context, where map[string]any) (bool, error)
 }
 
 type OrgHandler interface {
@@ -36,5 +35,5 @@ type OrgHandler interface {
 }
 
 type CreateOrgUseCase interface {
-	Execute(cxt context.Context, input types.CreateOrgInput) *apperrors.APIError
+	Execute(cxt context.Context, input types.CreateOrgInput) error
 }
