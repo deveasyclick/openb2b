@@ -1,11 +1,11 @@
 package org
 
 import (
-	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/deveasyclick/openb2b/internal/model"
 	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/dto"
@@ -15,7 +15,20 @@ import (
 	"github.com/deveasyclick/openb2b/internal/shared/validator"
 	"github.com/deveasyclick/openb2b/pkg/interfaces"
 	"github.com/go-chi/chi"
+	"gorm.io/gorm"
 )
+
+type APIResponseOrg struct {
+	Code    int       `json:"code"`
+	Message string    `json:"message"`
+	Data    model.Org `json:"data"`
+}
+
+type APIResponseInt struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    int    `json:"data"`
+}
 
 type OrgHandler struct {
 	service     interfaces.OrgService
@@ -34,7 +47,7 @@ func NewHandler(service interfaces.OrgService, createOrgUC interfaces.CreateOrgU
 // @Accept json
 // @Produce json
 // @Param request body dto.CreateOrgDTO true "Organization payload"
-// @Success 200 {object} model.Org
+// @Success 200 {object} APIResponseOrg
 // @Failure      400  {object}  apperrors.APIErrorResponse
 // @Failure      500  {object}  apperrors.APIErrorResponse
 // @Router /orgs [post]
@@ -43,19 +56,13 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req dto.CreateOrgDTO
 	if errors := validator.ValidateRequest(r, &req); len(errors) > 0 {
-		h.appCtx.Logger.Error("invalid request body in org create", "errors", errors)
 		validator.WriteValidationResponse(w, errors)
 		return
 	}
 
 	userFromContext, err := identity.UserFromContext(ctx)
 	if err != nil {
-		h.appCtx.Logger.Error(apperrors.ErrUserFromContext, "err", err)
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:        http.StatusInternalServerError,
-			Message:     apperrors.ErrCreateOrg,
-			InternalMsg: fmt.Sprintf("%s: %s", apperrors.ErrUserFromContext, err),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateOrg, h.appCtx.Logger)
 		return
 	}
 
@@ -63,34 +70,29 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	org := req.ToModel()
 
 	// Check if org already exists
-	exists, apiError := h.service.Exists(ctx, map[string]any{"name": org.Name})
-	if apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+	exists, err := h.service.Exists(ctx, map[string]any{"name": org.Name})
+	if err != nil && err != gorm.ErrRecordNotFound {
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrOrgAlreadyExists, h.appCtx.Logger)
 		return
 	}
 
 	// Return already exists error if org already exists
 	if exists {
-		response.WriteJSONError(w, &apperrors.APIError{
-			Code:    http.StatusConflict,
-			Message: fmt.Sprintf("%s: name %s", apperrors.ErrOrgAlreadyExists, org.Name),
-		}, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusConflict, nil, apperrors.ErrOrgAlreadyExists, h.appCtx.Logger)
 		return
 	}
 
-	apiError = h.createOrgUC.Execute(ctx, types.CreateOrgInput{
+	err = h.createOrgUC.Execute(ctx, types.CreateOrgInput{
 		Org:  org,
 		User: userFromContext,
 	})
 
-	if apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+	if err != nil {
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrCreateOrg, h.appCtx.Logger)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(org); err != nil {
-		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
-	}
+	response.WriteJSONSuccess(w, http.StatusCreated, org, h.appCtx.Logger)
 }
 
 // Update godoc
@@ -101,17 +103,17 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path int true "Organization ID"
 // @Param request body dto.UpdateOrgDTO true "Update organization payload"
-// @Success 200 {object} model.Org
+// @Success 200 {object} APIResponseOrg
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
-// @Router /orgs/{id} [put]
+// @Router /orgs/{id} [patch]
 // @Security BearerAuth
 func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("%s: %d", apperrors.ErrInvalidId, id), http.StatusBadRequest)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
 
@@ -122,23 +124,26 @@ func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get existing org
-	existingOrg, apiError := h.service.FindOrg(ctx, uint(id))
-	if apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+	existingOrg, err := h.service.FindOrg(ctx, uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrOrgNotFound, h.appCtx.Logger)
+			return
+		}
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateOrg, h.appCtx.Logger)
+
 		return
 	}
 
 	// Update only provided fields
 	req.ApplyModel(existingOrg)
 
-	if apiError := h.service.Update(ctx, existingOrg); apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+	if err := h.service.Update(ctx, existingOrg); err != nil {
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrUpdateOrg, h.appCtx.Logger)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(existingOrg); err != nil {
-		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
-	}
+	response.WriteJSONSuccess(w, http.StatusOK, existingOrg, h.appCtx.Logger)
 }
 
 // Delete godoc
@@ -147,7 +152,7 @@ func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Tags organizations
 // @Produce json
 // @Param id path int true "Organization ID"
-// @Success 200 {integer} int "Deleted organization ID"
+// @Success 200 {integer} APIResponseInt
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -157,18 +162,19 @@ func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		http.Error(w, apperrors.ErrInvalidId, http.StatusBadRequest)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
+	if err := h.service.Delete(ctx, uint(id)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrOrgNotFound, h.appCtx.Logger)
+			return
+		}
 
-	if apiError := h.service.Delete(ctx, uint(id)); apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrDeleteOrg, h.appCtx.Logger)
 		return
 	}
-
-	if err := json.NewEncoder(w).Encode(id); err != nil {
-		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
-	}
+	response.WriteJSONSuccess(w, http.StatusOK, id, h.appCtx.Logger)
 }
 
 // Get godoc
@@ -177,7 +183,7 @@ func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Tags organizations
 // @Produce json
 // @Param id path int true "Organization ID"
-// @Success 200 {object} model.Org
+// @Success 200 {object} APIResponseOrg
 // @Failure 404 {object} apperrors.APIErrorResponse
 // @Failure 400  {object}  apperrors.APIErrorResponse
 // @Failure 500  {object}  apperrors.APIErrorResponse
@@ -187,17 +193,19 @@ func (h *OrgHandler) Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		http.Error(w, apperrors.ErrInvalidId, http.StatusBadRequest)
+		response.WriteJSONErrorV2(w, http.StatusBadRequest, nil, apperrors.ErrInvalidId, h.appCtx.Logger)
 		return
 	}
 
-	org, apiError := h.service.FindOrg(ctx, uint(id))
-	if apiError != nil {
-		response.WriteJSONError(w, apiError, h.appCtx.Logger)
+	org, err := h.service.FindOrg(ctx, uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.WriteJSONErrorV2(w, http.StatusNotFound, nil, apperrors.ErrOrgNotFound, h.appCtx.Logger)
+			return
+		}
+		response.WriteJSONErrorV2(w, http.StatusInternalServerError, err, apperrors.ErrFindOrg, h.appCtx.Logger)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(org); err != nil {
-		h.appCtx.Logger.Warn(apperrors.ErrEncodeResponse, "error", err)
-	}
+	response.WriteJSONSuccess(w, http.StatusOK, org, h.appCtx.Logger)
 }

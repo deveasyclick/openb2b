@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/deveasyclick/openb2b/internal/shared/apperrors"
 	"github.com/deveasyclick/openb2b/internal/shared/deps"
 	"github.com/deveasyclick/openb2b/internal/shared/types"
 	"github.com/deveasyclick/openb2b/pkg/clerk"
@@ -34,7 +33,7 @@ func NewCreateUseCase(
 	}
 }
 
-func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgInput) *apperrors.APIError {
+func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgInput) error {
 	txErr := uc.appCtx.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
 		// Wrap services with transactional repos
@@ -54,18 +53,8 @@ func (uc *createOrgUseCase) Execute(ctx context.Context, input types.CreateOrgIn
 		return nil // commit
 	})
 
-	// TODO: return plain error in services
 	if txErr != nil {
-		var apiErr *apperrors.APIError
-		if errors.As(txErr, &apiErr) {
-			return apiErr // return your own type
-		}
-
-		return &apperrors.APIError{
-			Code:        500,
-			Message:     "internal server error",
-			InternalMsg: txErr.Error(),
-		}
+		return txErr
 	}
 
 	orgID := strconv.FormatUint(uint64(input.Org.ID), 10)
