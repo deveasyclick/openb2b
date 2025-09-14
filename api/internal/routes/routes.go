@@ -88,7 +88,7 @@ func Register(r chi.Router, appCtx *deps.AppContext, middleware interfaces.Middl
 		// Private routes
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.ValidateJWT())
-			registerOrgRoutes(r, orgHandler)
+			org.RegisterRoutes(r, orgHandler)
 			registerUserRoutes(r, userHandler)
 			registerProductRoutes(r, productHandler)
 			registerOrderRoutes(r, orderHandler)
