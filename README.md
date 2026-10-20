@@ -1,5 +1,7 @@
 # OpenB2B
 
+[Live demo](https://openb2b-web.vercel.app) · [MIT license](LICENSE)
+
 ## Overview
 
 **OpenB2B** is an open-source, multi-tenant ordering and invoicing platform designed for small wholesalers to manage products, process orders, and track invoices — all in one place.
@@ -65,7 +67,7 @@ For full setup instructions, see the [Authentication Documentation](docs/authent
 ### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/openb2b.git
+git clone https://github.com/deveasyclick/openb2b.git
 cd openb2b
 ```
 
@@ -178,3 +180,7 @@ For support, feature requests, or feedback, contact:
 * **Email:** [support@openb2b.com](mailto:support@openb2b.com)
 * **Phone:** +234-8067177670
 * **Website:** [https://openb2b.com/support](https://openb2b.com/support)
+
+## License
+
+[MIT](LICENSE) © 2026 Yusuf Adeniyi.
